@@ -1,0 +1,332 @@
+﻿@page "/ucne/editar-solicitud/{DocumentoId:int}"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject ConfiguracionSistemaService configuracionService
+@inject EstudianteService estudianteService
+@inject TipoDocumentoService tipoDocumentoService
+@inject DocumentoService documentoService
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+@inject GitHubSyncService githubService
+
+<PageTitle>Editar Solicitud de Documento</PageTitle>
+
+<div class="form-section">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h4 class="card-title"><strong>Editar Solicitud de Documento</strong></h4>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label"><strong>Estudiante</strong></label>
+                <input type="text" class="form-control" readonly
+                       value="@($"{documento?.Estudiante?.Matricula} - {documento?.Estudiante?.Nombres} {documento?.Estudiante?.Apellidos}")" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Tipo de Documento</strong></label>
+                <InputSelect class="form-select" @bind-Value="documento!.TipoDocumentoId" disabled>
+                    <option value="0" disabled>Seleccione un tipo de documento</option>
+                    @foreach (var tipo in tiposDocumento)
+                    {
+                        <option value="@tipo.TipoDocumentoId">@tipo.Nombre</option>
+                    }
+                </InputSelect>
+            </div>
+
+            @if (documento.TipoDocumentoId == 15)
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción del documento</strong></label>
+                    <input type="text" class="form-control" value="@documento.DescripcionAdicional" readonly />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Estado del Documento</strong></label>
+                <InputSelect class="form-select" @bind-Value="estadoProceso">
+                    <option value="Iniciado" disabled="@(documento.EstadoProceso != "Iniciado")">Iniciado</option>
+                    <option value="En Proceso" disabled="@(documento.EstadoProceso == "Finalizado")">En Proceso</option>
+                    <option value="Finalizado" disabled="@(documento.EstadoProceso == "Iniciado")">Finalizado</option>
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Fecha de Solicitud</strong></label>
+                <InputDate class="form-control" @bind-Value="documento.FechaSolicitudLocal" />
+            </div>
+
+            @if (estadoProceso == "Finalizado") 
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Finalización</strong></label>
+                    <InputDate class="form-control" @bind-Value="documento.FechaFinalizadoLocal" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Entrega</strong></label>
+                    <InputDate class="form-control" @bind-Value="documento.FechaEntregaLocal" />
+                </div>
+
+                @if (configuracion.RequiereArchivoConHash)
+                {
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Archivo PDF Final</strong></label>
+                        <InputFile OnChange="OnFileSelected" accept=".pdf" />
+                    </div>
+                }
+            }
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer text-center">
+            <a href="/ucne/registros" class="btn btn-secondary me-2">
+                <span class="bi bi-arrow-left me-2"></span> Volver
+            </a>
+
+            <button class="btn btn-success"
+                    @onclick="MostrarModalConfirmacion"
+                    disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0)">
+
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Guardando...</span>
+                }
+                else
+                {
+                    <span class="bi bi-save me-2"></span>
+                    <span>Guardar</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Edición
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Para confirmar la edición, ingrese su contraseña y describa brevemente el cambio realizado:</p>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Contraseña</strong></label>
+                        <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Descripción del cambio</strong></label>
+                        <textarea class="form-control"
+                                rows="3"
+                                placeholder="Ejemplo: Subió el archivo PDF final y marcó el documento como Finalizado"
+                                @bind="descripcionTrabajo"></textarea>
+                        <small class="text-muted">Este texto se registrará en el historial del documento.</small>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorConfirmacion))
+                    {
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i>@errorConfirmacion
+                        </div>
+                    }
+            </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" @onclick="ConfirmarGuardar">
+                        <i class="bi bi-check-circle"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int DocumentoId { get; set; }
+
+    public Registrador registrador = new();
+    private Documento documento = new();
+    private List<TipoDocumento> tiposDocumento = new();
+    private List<Estudiante> estudiantes = new();
+    private ConfiguracionSistema configuracion = new();
+
+    private IBrowserFile? archivoPdf;
+    private byte[]? TempFileBytes;
+
+    private string descripcionTrabajo = string.Empty;
+    private string estadoProceso = "Iniciado";
+    private string? errorMensaje;
+    private bool isLoading = false;
+
+    private bool mostrarModalConfirmacion = false;
+    private string passwordConfirmacion = string.Empty;
+    private string errorConfirmacion = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        configuracion = await configuracionService.Obtener();
+
+        documento = await documentoService.Buscar(DocumentoId) ?? new();
+        estadoProceso = documento.EstadoProceso;
+
+        registrador = await registradorService.BuscarPorId(session.RegistradorId) ?? new();
+
+        estudiantes = (await estudianteService.Listar(e => e.Activo))
+            .OrderByDescending(e => e.EstudianteId)
+            .Take(50)
+            .ToList();
+
+        tiposDocumento = await tipoDocumentoService.Listar();
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        archivoPdf = e.File;
+        using Stream? stream = archivoPdf.OpenReadStream(maxAllowedSize: 10_000_000);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        var hashBytes = sha.ComputeHash(bytes);
+        documento.HashArchivo = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
+        documento.ArchivoPdfRuta = archivoPdf.Name;
+        TempFileBytes = bytes;
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        errorConfirmacion = string.Empty;
+        passwordConfirmacion = string.Empty;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion() 
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorMensaje = string.Empty;
+        errorConfirmacion = string.Empty;
+
+        if (!BCrypt.Net.BCrypt.Verify(passwordConfirmacion, registrador.Contrasena))
+        {
+            errorConfirmacion = "La contraseña no coincide.";
+            return;
+        }
+
+        if (documento.TipoDocumentoId <= 0)
+        {
+            mostrarModalConfirmacion = false;
+            errorMensaje = "Debe seleccionar un tipo de documento.";
+            return;
+        }
+
+        if (estadoProceso == "Finalizado")
+        {
+            if (!documento.FechaFinalizadoLocal.HasValue)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de finalización debe tener un valor.";
+                return;
+            }
+
+            if (documento.FechaFinalizadoLocal.Value.Date < documento.FechaSolicitudLocal.Date)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de finalización no puede ser menor que la fecha de solicitud.";
+                return;
+            }
+
+            if (documento.FechaEntregaLocal.HasValue &&
+                documento.FechaEntregaLocal.Value.Date < documento.FechaFinalizadoLocal.Value.Date)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de entrega no puede ser menor que la fecha de finalización.";
+                return;
+            }
+        }
+        else
+        {
+            documento.FechaFinalizadoLocal = null;
+            documento.FechaEntregaLocal = null;
+
+            documento.ArchivoPdfRuta = null;
+            documento.HashArchivo = null;
+        }
+
+        isLoading = true;
+
+        if (TempFileBytes != null && estadoProceso == "Finalizado")
+        {
+            var uniqueFileName = $"doc_{Guid.NewGuid():N}_{Path.GetFileName(documento.ArchivoPdfRuta)}";
+            var url = await githubService.SubirArchivoAsync(
+                TempFileBytes,
+                uniqueFileName,
+                $"Subida de documento {documento.DocumentoId} por {registrador.Nombres}"
+            );
+
+            if (url != null)
+            {
+                documento.ArchivoPdfRuta = url;
+            }
+            else
+            {
+                errorMensaje = "Error al subir el archivo a GitHub.";
+                isLoading = false;
+                return;
+            }
+        }
+
+        documento.EstadoProceso = estadoProceso;
+        
+        documento.DocumentoRegistradores.Add(new DocumentoRegistrador
+        {
+            RegistradorId = session.RegistradorId,
+            FechaTrabajoLocal = DateTime.Now,
+            DescripcionTrabajo = string.IsNullOrWhiteSpace(descripcionTrabajo)
+            ? "Sin descripción"
+            : descripcionTrabajo.Trim()
+        });
+
+        if (await documentoService.Guardar(documento))
+        {
+            mostrarModalConfirmacion = false;
+            Navigation.NavigateTo("/ucne/registros");
+        }
+        else
+        {
+            mostrarModalConfirmacion = false;
+            errorMensaje = "Error al guardar la solicitud. Intente nuevamente.";
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,187 @@
+@page "/ucne/configuracion-sistema"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject ConfiguracionSistemaService configuracionService
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+
+<PageTitle>Configuración del Sistema</PageTitle>
+
+<div class="custom-pages">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title"
+                <i class="bi bi-gear me-2"></i> Configuración del Sistema
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-4">
+                <label class="form-label"><strong>Requerir archivo con hash al finalizar documento</strong></label>
+
+                <div class="form-check">
+                    <input type="checkbox"
+                           class="form-check-input"
+                           id="chkRequiereHash"
+                           @bind="config.RequiereArchivoConHash" />
+
+                    <label class="form-check-label" for="chkRequiereHash">
+                        Activar validación de archivo PDF con hash
+                    </label>
+                </div>
+
+                <small class="text-muted">
+                    Si se activa, todos los documentos finalizados deberán tener un archivo PDF subido y un hash generado.
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Última actualización</strong></label>
+                <input type="text" class="form-control"
+                       value="@config.UltimaActualizacionLocal.ToString("dd/MM/yyyy HH:mm")"
+                       disabled />
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message @(guardadoExitoso ? "bg-success text-white border-success" : "bg-danger")">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        @mensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <a href="/ucne/registros" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+
+            <button class="btn btn-success"
+                    @onclick="MostrarModalConfirmacion"
+                    disabled="@isLoading">
+
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <span>Guardando...</span>
+                }
+                else
+                {
+                    <i class="bi bi-save me-2"></i>
+                    <span>Guardar</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Guardado
+                    </h5>
+                    <button class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Para confirmar la actualización, ingrese su contraseña: </p>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Contraseña</strong></label>
+                        <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorConfirmacion))
+                    {
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i>@errorConfirmacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+
+                    <button class="btn btn-success" @onclick="ConfirmarGuardar">
+                        <i class="bi bi-check-circle"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ConfiguracionSistema config = new();
+    private Registrador registrador = new();
+
+    private bool isLoading = false;
+    private bool guardadoExitoso = false;
+    private string? mensaje;
+
+    private bool mostrarModalConfirmacion = false;
+    private string passwordConfirmacion = string.Empty;
+    private string errorConfirmacion = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        config = await configuracionService.Obtener();
+        registrador = await registradorService.BuscarPorId(session.RegistradorId) ?? new();
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        passwordConfirmacion = string.Empty;
+        errorConfirmacion = string.Empty;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorConfirmacion = string.Empty;
+        mensaje = null;
+
+        if (!BCrypt.Net.BCrypt.Verify(passwordConfirmacion, registrador.Contrasena))
+        {
+            errorConfirmacion = "La contraseña no coincide.";
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            config.UltimaActualizacionLocal = DateTime.Now;
+            await configuracionService.Guardar(config);
+
+            guardadoExitoso = true;
+            mensaje = "Configuración actualizada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            mostrarModalConfirmacion = false;
+            isLoading = false;
+        }
+    }
+}

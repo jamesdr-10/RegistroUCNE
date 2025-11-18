@@ -1,0 +1,197 @@
+﻿@page "/ucne/editar-registrador/{RegistradorId:int}"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+
+<PageTitle>Editar Registrador</PageTitle>
+
+<EditForm Model="registradorAEditar" OnValidSubmit="MostrarModalConfirmacion">
+    <DataAnnotationsValidator />
+
+    <div class="form-section">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="card-title"><strong>Editar Registrador</strong></h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="registradorAEditar.Nombres" placeholder="Nombres" />
+                    <ValidationMessage For="(() => registradorAEditar.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellidos</strong></label>
+                    <InputText class="form-control" @bind-Value="registradorAEditar.Apellidos" placeholder="Apellidos" />
+                    <ValidationMessage For="(() => registradorAEditar.Apellidos)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="registradorAEditar.Direccion" placeholder="Dirección" />
+                    <ValidationMessage For="(() => registradorAEditar.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Correo</strong></label>
+                    <InputText class="form-control" @bind-Value="registradorAEditar.Correo" placeholder="Correo" />
+                    <ValidationMessage For="(() => registradorAEditar.Correo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre de Usuario</strong></label>
+                    <InputText class="form-control" @bind-Value="registradorAEditar.NombreUsuario" placeholder="Usuario" />
+                    <ValidationMessage For="(() => registradorAEditar.NombreUsuario)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Contraseña</strong></label>
+                    <input type="password" class="form-control" @bind="registradorAEditar.Contrasena" placeholder="Contraseña" />
+                    <ValidationMessage For="(() => registradorAEditar.Contrasena)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <a href="/ucne/registro-registradores" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
+
+                <button class="btn btn-success"
+                        type="submit"
+                        disabled="@(isLoading || string.IsNullOrWhiteSpace(registradorAEditar.NombreUsuario)
+                                              || string.IsNullOrWhiteSpace(registradorAEditar.Correo)
+                                              || string.IsNullOrWhiteSpace(registradorAEditar.Direccion)
+                                              || string.IsNullOrWhiteSpace(registradorAEditar.Apellidos)
+                                              || string.IsNullOrWhiteSpace(registradorAEditar.Nombres)
+                                              || string.IsNullOrWhiteSpace(registradorAEditar.Contrasena))">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container mt-3">
+                        <div class="error-message text-danger">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Edición
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Para confirmar la edición, ingrese su contraseña: </p>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Contraseña</strong></label>
+                        <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorConfirmacion))
+                    {
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i>@errorConfirmacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" @onclick="ConfirmarGuardar">
+                        <i class="bi bi-check-circle"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int RegistradorId { get; set; }
+
+    private Registrador registrador = new();
+    private Registrador registradorAEditar = new();
+
+    private string errorMensaje = string.Empty;
+    private bool isLoading = false;
+
+    private bool mostrarModalConfirmacion = false;
+    private string passwordConfirmacion = string.Empty;
+    private string errorConfirmacion = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (RegistradorId > 0)
+        { 
+            registrador = await registradorService.BuscarPorId(session.RegistradorId) ?? new();
+            registradorAEditar = await registradorService.BuscarPorId(RegistradorId) ?? new();
+        }
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        errorConfirmacion = string.Empty;
+        passwordConfirmacion = string.Empty;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorMensaje = string.Empty;
+        errorConfirmacion = string.Empty;
+
+        if (BCrypt.Net.BCrypt.Verify(passwordConfirmacion, registrador.Contrasena))
+        {
+            errorConfirmacion = "La contraseña no coincide.";
+            return;
+        }
+
+        isLoading = true;
+
+        if (await registradorService.Guardar(registradorAEditar))
+        {
+            mostrarModalConfirmacion = false;
+            Navigation.NavigateTo($"/ucne/registro-registradores");
+        }
+        else
+        {
+            mostrarModalConfirmacion = false;
+            errorMensaje = "Error al guardar el registrador. Intente nuevamente.";
+            isLoading = false;
+        }
+    }
+}

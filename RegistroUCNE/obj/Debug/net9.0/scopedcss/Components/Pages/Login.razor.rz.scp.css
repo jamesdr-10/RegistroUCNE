@@ -1,0 +1,149 @@
+.login-page[b-nee3aip9wk] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #FAF852, #00509e);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.body-container[b-nee3aip9wk] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.card[b-nee3aip9wk] {
+    width: 90%;
+    max-width: 480px;
+    min-width: 320px;
+    max-height: 90vh;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.card-header[b-nee3aip9wk] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: none;
+    background: transparent;
+}
+
+    .card-header .logo-ucne[b-nee3aip9wk] {
+        height: 100px;
+        width: auto;
+        border-radius: 0.5rem;
+        box-shadow: none;
+    }
+
+    .card-header .header-title[b-nee3aip9wk] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #002855;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+.card-title[b-nee3aip9wk] {
+    color: #002855;
+    margin: 2rem 0 1.5rem 0;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.mb-3[b-nee3aip9wk] {
+    margin-bottom: 1.5rem;
+}
+
+.form-label[b-nee3aip9wk] {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.form-control[b-nee3aip9wk] {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.05), inset -1px -1px 3px rgba(255,255,255,0.7);
+    transition: all 0.3s ease;
+}
+
+    .form-control:hover[b-nee3aip9wk] {
+        background-color: #e8f4fd;
+        border-color: #00509e;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 80, 158, 0.15);
+    }
+
+    .form-control:focus[b-nee3aip9wk] {
+        border-color: #00509e;
+        background-color: #fff;
+        box-shadow: 0 0 8px rgba(0, 80, 158, 0.3);
+        outline: none;
+        transform: translateY(-3px);
+    }
+
+.btn-success[b-nee3aip9wk] {
+    width: auto;
+    min-width: 180px;
+    max-width: 240px;
+    margin: 0 auto;
+    display: block;
+    background-color: #30A628;
+    border: none;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+    .btn-success:hover:not(:disabled)[b-nee3aip9wk] {
+        background-color: #097D01;
+        transform: translateY(-2px);
+    }
+
+    .btn-success:disabled[b-nee3aip9wk] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+.error-message[b-nee3aip9wk] {
+    color: #d9534f;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+
+.card-footer[b-nee3aip9wk] {
+    padding: 1.5rem 0 0 0;
+    text-align: center;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+}

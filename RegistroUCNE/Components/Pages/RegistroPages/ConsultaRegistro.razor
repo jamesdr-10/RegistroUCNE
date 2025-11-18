@@ -1,0 +1,342 @@
+﻿@page "/ucne/registros"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject ConfiguracionSistemaService configuracionService
+@inject RegistradorService registradorService
+@inject DocumentoService documentoService
+@inject TipoDocumentoService tipoDocumentoService
+
+<PageTitle>Consulta de Registros Académicos</PageTitle>
+
+<div class="registros-container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title"><strong>Consulta de Registros Académicos</strong></h5>
+        </div>
+
+        <div class="card-body">
+            <div class="d-flex justify-content-md-end mb-3">
+                <a href="/ucne/crear-solicitud" class="btn btn-primary bi bi-file-plus">
+                    Crear Solicitud
+                </a>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Tipo de Documento</strong></label>
+                    <InputSelect class="form-select" @bind-Value="filtroTipoDoc">
+                        <option value="">Todos</option>
+                        @foreach (var tipo in tiposDocumentos)
+                        {
+                            <option value="@tipo.Nombre">@tipo.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Estado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="filtroEstado">
+                        <option value="">Todos</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Finalizado">Finalizado</option>
+                        <option value="Entregado">Entregado</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Desde</strong></label>
+                    <InputDate class="form-control" @bind-Value="fechaDesde" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Hasta</strong></label>
+                    <InputDate class="form-control" @bind-Value="fechaHasta" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Buscar (Tipo o Estudiante)</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Acta o Juan Pérez" @bind-Value="textoBusqueda" />
+                </div>
+
+                <div class="col-md-5 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="mostrarSoloMios" />
+                        <label class="form-check-label"><strong>Solo mis documentos</strong></label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end justify-content-md-end">
+                    <button class="btn btn-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th>ID</th>
+                            <th>Tipo de Documento</th>
+                            <th>Estudiante</th>
+                            <th>Estado</th>
+                            <th>Fecha de Solicitud</th>
+                            <th>Fecha de Finalización</th>
+                            <th>Fecha de Entrega</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!documentosFiltrados.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">No se han encontrado documentos.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var documento in documentosPaginados)
+                            {
+                                var alertaHash = configuracion.RequiereArchivoConHash 
+                                                && documento.EstadoProceso == "Finalizado"
+                                                && (string.IsNullOrEmpty(documento.ArchivoPdfRuta) || string.IsNullOrEmpty(documento.HashArchivo));
+
+                                <tr class="text-center @(alertaHash ? "table-warning" : "")">
+                                    <td>@documento.DocumentoId</td>
+                                    <td>
+                                        @documento.TipoDocumento!.Nombre
+                                        @if (documento.TipoDocumentoId == 15 && !string.IsNullOrWhiteSpace(documento.DescripcionAdicional))
+                                        {
+                                            <span> - @documento.DescripcionAdicional</span>
+                                        }
+                                    </td>
+                                    <td>@documento.Estudiante!.Nombres @documento.Estudiante.Apellidos</td>
+                                    <td>
+                                        @if (alertaHash)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> Falta Hash/PDF
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="@ObtenerClaseEstado(documento.EstadoProceso)">
+                                                @documento.EstadoProceso
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>@documento.FechaSolicitudLocal.ToString("dd/MM/yyyy")</td>
+                                    <td>@(documento.FechaFinalizadoLocal?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                                    <td>@(documento.FechaEntregaLocal?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                                    <td>
+                                        <a href="/ucne/ver-solicitud/@documento.DocumentoId" 
+                                                class="btn btn-info btn-sm" 
+                                                title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/ucne/editar-solicitud/@documento.DocumentoId" 
+                                                class="btn btn-edit btn-sm" 
+                                                title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm"
+                                                title="Eliminar"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEliminar"
+                                                @onclick="@(() => SeleccionarSolicitud(documento))">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPaginas > 1)
+            {
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <small>Mostrando @(((paginaActual - 1) * tamanoPagina) + 1)
+                            -
+                            @(Math.Min(paginaActual * tamanoPagina, documentosFiltrados.Count()))
+                            de @documentosFiltrados.Count() registros</small>
+                    </div>
+
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PrimeraPagina">« Primera</button>
+                            </li>
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaAnterior">‹ Anterior</button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Página @paginaActual de @totalPaginas</span>
+                            </li>
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaSiguiente">Siguiente ›</button>
+                            </li>
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="UltimaPagina">Última »</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container mt-3">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer text-muted">
+            <small>Total de documentos: @documentosFiltrados.Count()</small>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> Confirmar eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar la siguiente solicitud?</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>ID:</strong> <span class="badge bg-secondary">@documentoSeleccionado?.DocumentoId</span></li>
+                    <li class="list-group-item"><strong>Tipo de Documento:</strong> <span class="badge bg-primary">@documentoSeleccionado?.TipoDocumento!.Nombre</span></li>
+                    <li class="list-group-item"><strong>Estudiante:</strong> <span class="badge bg-primary">@documentoSeleccionado?.Estudiante!.Nombres @documentoSeleccionado?.Estudiante!.Apellidos</span></li>
+                    <li class="list-group-item"><strong>Estado:</strong> <span class="badge bg-secondary">@documentoSeleccionado?.EstadoProceso</span></li>
+                    <li class="list-group-item"><strong>Fecha de Solicitud:</strong> <span class="badge bg-info">@documentoSeleccionado?.FechaSolicitudLocal.ToString("dd/MM/yyyy")</span></li>
+                </ul>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @onclick="Eliminar">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ConfiguracionSistema configuracion = new();
+    private List<Documento> documentos = new();
+    private List<Documento> documentosRegistrador = new();
+    private List<TipoDocumento> tiposDocumentos = new();
+    private Documento? documentoSeleccionado;
+
+    private string filtroTipoDoc = "";
+    private string filtroEstado = "";
+    private DateTime? fechaDesde;
+    private DateTime? fechaHasta;
+    private string textoBusqueda = "";
+    private bool mostrarSoloMios = true;
+
+    private string? errorMensaje;
+
+    private int paginaActual = 1;
+    private int tamanoPagina = 10;
+    private int totalPaginas => (int)Math.Ceiling((double)documentosFiltrados.Count() / tamanoPagina);
+
+    private IEnumerable<Documento> documentosFiltrados => (mostrarSoloMios ? documentosRegistrador : documentos)
+        .Where(d =>
+            (string.IsNullOrEmpty(filtroTipoDoc) || d.TipoDocumento!.Nombre.Contains(filtroTipoDoc, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(filtroEstado) || d.EstadoProceso.Equals(filtroEstado, StringComparison.OrdinalIgnoreCase)) &&
+            (!fechaDesde.HasValue || d.FechaSolicitudLocal.Date >= fechaDesde.Value.Date) &&
+            (!fechaHasta.HasValue || d.FechaSolicitudLocal.Date <= fechaHasta.Value.Date) &&
+            (string.IsNullOrEmpty(textoBusqueda)
+                || d.TipoDocumento!.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
+                || (d.Estudiante!.Nombres + " " + d.Estudiante.Apellidos)
+                    .Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
+        )
+        .OrderByDescending(d => d.FechaSolicitudLocal);
+
+    private IEnumerable<Documento> documentosPaginados => documentosFiltrados
+        .Skip((paginaActual - 1) * tamanoPagina)
+        .Take(tamanoPagina);
+
+    protected override async Task OnInitializedAsync()
+    {
+        configuracion = await configuracionService.Obtener();
+
+        documentos = await documentoService.Listar(d => d.Activo == true);
+        documentosRegistrador = documentos
+            .Where(d => d.DocumentoRegistradores
+            .Any(dr => dr.RegistradorId == session.RegistradorId) && d.Activo == true)
+            .ToList();
+
+        tiposDocumentos = await tipoDocumentoService.Listar();
+    }
+
+    private async Task Eliminar()
+    {
+        errorMensaje = null;
+
+        if (documentoSeleccionado != null && await documentoService.Deshabilitar(documentoSeleccionado.DocumentoId))
+        {
+            documentos = await documentoService.Listar(d => d.Activo == true);
+            documentosRegistrador = documentos
+                .Where(d => d.DocumentoRegistradores
+                .Any(dr => dr.RegistradorId == session.RegistradorId) && d.Activo == true)
+                .ToList();
+
+            documentoSeleccionado = null;
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar la solicitud. Intente nuevamente.";
+        }
+    }
+
+    private void SeleccionarSolicitud(Documento documento)
+    {
+        documentoSeleccionado = documento;
+    }
+
+    private void LimpiarFiltros()
+    {
+        filtroTipoDoc = "";
+        filtroEstado = "";
+        fechaDesde = null;
+        fechaHasta = null;
+        textoBusqueda = "";
+        mostrarSoloMios = true;
+        paginaActual = 1;
+    }
+
+    private string ObtenerClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "Iniciado" => "badge bg-secondary",
+            "En Proceso" => "badge bg-warning text-dark",
+            "Finalizado" => "badge bg-success",
+            _ => "badge bg-secondary"
+        };
+    }
+
+    private void PrimeraPagina() => paginaActual = 1;
+    private void PaginaAnterior() { if (paginaActual > 1) paginaActual--; }
+    private void PaginaSiguiente() { if (paginaActual < totalPaginas) paginaActual++; }
+    private void UltimaPagina() => paginaActual = totalPaginas;
+}

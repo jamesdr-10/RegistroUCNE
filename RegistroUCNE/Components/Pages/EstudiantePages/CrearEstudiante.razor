@@ -1,0 +1,120 @@
+﻿@page "/ucne/crear-estudiante"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject EstudianteService estudianteService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Estudiante</PageTitle>
+<EditForm Model="estudiante" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="form-section">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="card-title"><strong>Crear Estudiante</strong></h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Nombres" placeholder="Ingrese los nombres" />
+                    <ValidationMessage For="(() => estudiante.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellidos</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Apellidos" placeholder="Ingrese los apellidos" />
+                    <ValidationMessage For="(() => estudiante.Apellidos)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Direccion" placeholder="Ingrese la dirección" />
+                    <ValidationMessage For="(() => estudiante.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Correo</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Correo" placeholder="Ingrese el correo" />
+                    <ValidationMessage For="(() => estudiante.Correo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Matrícula</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Matricula" placeholder="Ingrese la matrícula" />
+                    <ValidationMessage For="(() => estudiante.Matricula)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Carrera</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Carrera" placeholder="Ingrese la carrera" />
+                    <ValidationMessage For="(() => estudiante.Carrera)" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="estudiante.EsEgresado" />
+                    <label class="form-check-label">Es Egresado</label>
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <a href="/ucne/registro-estudiantes/@session.RegistradorId" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
+
+                <button class="btn btn-success"
+                        type="submit"
+                        disabled="@(isLoading || string.IsNullOrWhiteSpace(estudiante.Nombres)
+                                              || string.IsNullOrWhiteSpace(estudiante.Apellidos)
+                                              || string.IsNullOrWhiteSpace(estudiante.Direccion)
+                                              || string.IsNullOrWhiteSpace(estudiante.Matricula)
+                                              || string.IsNullOrWhiteSpace(estudiante.Correo)
+                                              || string.IsNullOrWhiteSpace(estudiante.Carrera))">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container">
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Estudiante estudiante = new Estudiante();
+    private bool isLoading = false;
+    private string errorMensaje = string.Empty;
+
+    private async Task Guardar()
+    {
+        errorMensaje = string.Empty;
+        isLoading = true;
+        
+        if (await estudianteService.Guardar(estudiante))
+        {
+            Navigation.NavigateTo($"/ucne/registro-estudiantes/{session.RegistradorId}");
+        } else
+        {
+            errorMensaje = "Error al guardar el estudiante. Intente nuevamente.";
+            isLoading = false;
+        }
+    }
+}

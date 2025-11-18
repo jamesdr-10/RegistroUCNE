@@ -1,0 +1,117 @@
+﻿@page "/ucne/crear-registrador"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Registrador</PageTitle>
+
+<EditForm Model="registrador" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="form-section">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="card-title"><strong>Crear Registrador</strong></h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Nombres" placeholder="Nombres" />
+                    <ValidationMessage For="(() => registrador.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellidos</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Apellidos" placeholder="Apellidos" />
+                    <ValidationMessage For="(() => registrador.Apellidos)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Direccion" placeholder="Dirección" />
+                    <ValidationMessage For="(() => registrador.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Correo</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Correo" placeholder="Correo" />
+                    <ValidationMessage For="(() => registrador.Correo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre de Usuario</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.NombreUsuario" placeholder="Usuario" />
+                    <ValidationMessage For="(() => registrador.NombreUsuario)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Contraseña</strong></label>
+                    <input type="password" class="form-control" @bind="registrador.Contrasena" placeholder="Contraseña" />
+                    <ValidationMessage For="(() => registrador.Contrasena)" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container">
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer text-center">
+                <a href="/ucne/registro-registradores" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
+
+                <button class="btn btn-success"
+                        type="submit"
+                        disabled="@(isLoading || string.IsNullOrWhiteSpace(registrador.NombreUsuario)
+                                              || string.IsNullOrWhiteSpace(registrador.Correo)
+                                              || string.IsNullOrWhiteSpace(registrador.Direccion)
+                                              || string.IsNullOrWhiteSpace(registrador.Apellidos)
+                                              || string.IsNullOrWhiteSpace(registrador.Nombres)
+                                              || string.IsNullOrWhiteSpace(registrador.Contrasena))">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private Registrador registrador = new();
+    private bool isLoading = false;
+    private string errorMensaje = string.Empty;
+
+    private async Task Guardar()
+    {
+        errorMensaje = string.Empty;
+        isLoading = true;
+
+        if (await registradorService.Guardar(registrador))
+        {
+            Navigation.NavigateTo("/ucne/registro-registradores");
+        } else
+        {
+            errorMensaje = "Error al guardar el registrador. Intente nuevamente.";
+            isLoading = false;
+        }
+    }
+}

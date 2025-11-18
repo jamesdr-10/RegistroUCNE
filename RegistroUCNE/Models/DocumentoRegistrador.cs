@@ -1,0 +1,29 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace RegistroUCNE.Models;
+
+public class DocumentoRegistrador
+{
+    [Key]
+    public int DocumentoRegistradorId { get; set; }
+    public int DocumentoId { get; set; }
+    public int RegistradorId { get; set; }
+    public DateTime FechaTrabajo { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(300)]
+    public string? DescripcionTrabajo { get; set; }
+
+    [ForeignKey(nameof(DocumentoId))]
+    public Documento? Documento { get; set; }
+
+    [ForeignKey(nameof(RegistradorId))]
+    public Registrador? Registrador { get; set; }
+
+    [NotMapped]
+    public DateTime FechaTrabajoLocal
+    {
+        get => DateTime.SpecifyKind(FechaTrabajo, DateTimeKind.Utc).ToLocalTime();
+        set => FechaTrabajo = DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime();
+    }
+}

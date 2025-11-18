@@ -1,0 +1,72 @@
+﻿@page "/"
+
+@inject SessionService session
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<div class="login-page">
+    <div class="body-container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <img src="/images/logoUCNE.png" class="logo-ucne" alt="Logo UCNE" />
+                <h1 class="header-title">Universidad Católica Nordestana</h1>
+            </div>
+
+            <div class="card-body">
+                <h4 class="card-title text-center"><strong>Iniciar Sesión</strong></h4>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Usuario</strong></label>
+                    <InputText class="form-control" @bind-Value="usuario" placeholder="Usuario"></InputText>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Contraseña</strong></label>
+                    <PasswordInput Class="form-control" @bind-Value="password" placeholder="Contraseña"></PasswordInput>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <p class="error-message">@errorMensaje</p>
+                }
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-success"
+                        @onclick="Conectar"
+                        disabled="@(string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(password))">
+                    Acceder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Registrador registrador = new Registrador();
+    private string usuario = string.Empty;
+    private string password = string.Empty;
+    private string? errorMensaje;
+
+    private async Task Conectar()
+    {
+        errorMensaje = null;
+
+        if (await registradorService.ExisteCredenciales(usuario, password))
+        {
+            registrador = await registradorService.BuscarPorCredenciales(usuario, password) ?? new();
+
+            if (registrador.Activo == true) 
+            {
+                Navigation.NavigateTo($"/ucne/registros");
+                session.RegistradorId = registrador.RegistradorId;
+            }
+        }
+        else
+        {
+            errorMensaje = "No se ha encontrado este usuario.";
+        }
+    }
+}

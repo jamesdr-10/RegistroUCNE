@@ -1,0 +1,219 @@
+﻿@page "/ucne/crear-solicitud/{EstudianteId:int?}"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject EstudianteService estudianteService
+@inject TipoDocumentoService tipoDocumentoService
+@inject DocumentoService documentoService
+@inject RegistradorService registradorService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Solicitud de Documento</PageTitle>
+
+<div class="form-section">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h4 class="card-title"><strong>Crear Solicitud de Documento</strong></h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (mostrarAlertaSeleccion)
+            {       
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="animation: fadeIn 0.5s;">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Estudiante seleccionado automáticamente: 
+                    <strong>@nombreEstudianteSeleccionado</strong>.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Estudiante</strong></label>
+                <input type="text" class="form-control mb-2" placeholder="Buscar por matrícula..."
+                       @bind="filtroMatricula"
+                       @bind:event="oninput" />
+
+                <select class="form-select" @bind="documento.EstudianteId" size="5">
+                    <option value="0" disabled>Seleccione un estudiante</option>
+                    @foreach (var est in estudiantesFiltrados.Take(10))
+                    {
+                        <option value="@est.EstudianteId">@est.Matricula - @est.Nombres @est.Apellidos</option>
+                    }
+                </select>
+
+                <small class="text-muted">
+                    Mostrando los 10 estudiantes más recientes.
+                    <a href="/ucne/buscar-estudiantes">Ver todos</a>
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Tipo de Documento</strong></label>
+                <InputSelect class="form-select" @bind-Value="documento.TipoDocumentoId">
+                    <option value="0" disabled>Seleccione un tipo de documento</option>
+                    @foreach (var tipo in tiposDocumento)
+                    {
+                        <option value="@tipo.TipoDocumentoId">@tipo.Nombre</option>
+                    }
+                </InputSelect>
+            </div>
+
+            @if (documento.TipoDocumentoId == 15)
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Especifique el tipo de documento</strong></label>
+                    <InputText class="form-control"
+                            @bind-Value="documento.DescripcionAdicional"
+                            placeholder="Ejemplo: WES - Canadá, ECFMG - Estados Unidos, etc." />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Estado del Documento</strong></label>
+                <InputSelect class="form-select" @bind-Value="documento.EstadoProceso">
+                    <option value="Iniciado">Iniciado</option>
+                    <option value="En Proceso" disabled>En Proceso</option>
+                    <option value="Finalizado" disabled>Finalizado</option>
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Fecha de Solicitud</strong></label>
+                <InputDate class="form-control" @bind-Value="documento.FechaSolicitudLocal" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer text-center">
+            <a href="/ucne/registros" class="btn btn-secondary me-2">
+                <span class="bi bi-arrow-left me-2"></span> Volver
+            </a>
+
+            <button class="btn btn-success"
+                    @onclick="Guardar"
+                    disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0)">
+
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Guardando...</span>
+                }
+                else
+                {
+                    <span class="bi bi-save me-2"></span>
+                    <span>Guardar</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? EstudianteId { get; set; }
+
+    private Documento documento = new();
+    private List<TipoDocumento> tiposDocumento = new();
+    private List<Estudiante> estudiantes = new();
+
+    private string? errorMensaje;
+    private bool isLoading = false;
+
+    private string filtroMatricula = string.Empty;
+    private string nombreEstudianteSeleccionado = string.Empty;
+    private bool mostrarAlertaSeleccion = false;
+
+    private IEnumerable<Estudiante> estudiantesFiltrados =>
+        string.IsNullOrWhiteSpace(filtroMatricula)
+            ? estudiantes : estudiantes
+            .Where(e => e.Matricula.Contains(filtroMatricula, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        documento.FechaSolicitudLocal = DateTime.Now;
+
+        estudiantes = (await estudianteService.Listar(e => e.Activo))
+            .OrderByDescending(e => e.EstudianteId)
+            .Take(50)
+            .ToList();
+
+        tiposDocumento = await tipoDocumentoService.Listar();
+
+        if (EstudianteId.HasValue)
+        {
+            var estudianteSeleccionado = estudiantes.FirstOrDefault(e => e.EstudianteId == EstudianteId.Value);
+
+            if (estudianteSeleccionado == null)
+            {
+                var encontrado = await estudianteService.Buscar(EstudianteId.Value);
+
+                if (encontrado != null)
+                {
+                    estudianteSeleccionado = encontrado;
+                }
+            }
+
+            if (estudianteSeleccionado != null)
+            {
+                documento.EstudianteId = estudianteSeleccionado.EstudianteId;
+                nombreEstudianteSeleccionado = $"{estudianteSeleccionado.Nombres} {estudianteSeleccionado.Apellidos}";
+                mostrarAlertaSeleccion = true;
+            }
+        }
+    }   
+
+    private async Task Guardar()
+    {
+        errorMensaje = null;
+        isLoading = true;
+
+        if (documento.EstudianteId <= 0)
+        {
+            errorMensaje = "Debe seleccionar un estudiante.";
+            isLoading = false;
+            return;
+        }
+
+        if (documento.TipoDocumentoId <= 0)
+        {
+            errorMensaje = "Debe seleccionar un tipo de documento.";
+            isLoading = false;
+            return;
+        }
+
+        if (documento.TipoDocumentoId == 15 && string.IsNullOrWhiteSpace(documento.DescripcionAdicional))
+        {
+            errorMensaje = "Debe especificar el nombre del documento en el campo adicional.";
+            isLoading = false;
+            return;
+        }
+
+        isLoading = false;
+
+        documento.DocumentoRegistradores.Add(new DocumentoRegistrador
+        {
+            RegistradorId = session.RegistradorId,
+            FechaTrabajoLocal = DateTime.Now,
+            DescripcionTrabajo = "Solicitud creada"
+        });
+
+        if (await documentoService.Guardar(documento))
+        {
+            Navigation.NavigateTo("/ucne/registros");
+        }
+        else
+        {
+            errorMensaje = "Error al guardar la solicitud. Intente nuevamente.";
+        }
+    }
+}

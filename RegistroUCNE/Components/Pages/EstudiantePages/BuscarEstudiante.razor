@@ -1,0 +1,191 @@
+@page "/ucne/buscar-estudiantes"
+
+<SessionGuard />
+
+@inject SessionService session
+@inject EstudianteService estudianteService
+@inject NavigationManager Navigation
+
+<PageTitle>Buscar Estudiantes</PageTitle>
+
+<div class="registros-container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h4 class="card-title"><strong>Buscar Estudiantes</strong></h4>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Nombre o Apellido</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Juan Pérez" @bind-Value="filtroNombre" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Matrícula</strong></label>
+                    <InputText class="form-control" placeholder="Ej: 2023-0001" @bind-Value="filtroMatricula" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Carrera</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Ingeniería" @bind-Value="filtroCarrera" />
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label"><strong>Egresado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="filtroEgresado">
+                        <option value="">Todos</option>
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end justify-content-md-end">
+                    <button class="btn btn-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th>ID</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Matrícula</th>
+                            <th>Carrera</th>
+                            <th>Egresado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!estudiantesFiltrados.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">No se han encontrado estudiantes.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var estudiante in estudiantesPaginados)
+                            {
+                                <tr class="text-center">
+                                    <td>@estudiante.EstudianteId</td>
+                                    <td>@estudiante.Nombres</td>
+                                    <td>@estudiante.Apellidos</td>
+                                    <td>@estudiante.Matricula</td>
+                                    <td>@estudiante.Carrera</td>
+                                    <td>@(estudiante.EsEgresado ? "✅" : "❌")</td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm"
+                                                title="Seleccionar estudiante"
+                                                @onclick="() => SeleccionarEstudiante(estudiante.EstudianteId)">
+                                            <i class="bi bi-check-circle"></i> Seleccionar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPaginas > 1)
+            {
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <small>
+                            Mostrando @(((paginaActual - 1) * tamanoPagina) + 1)
+                            -
+                            @(Math.Min(paginaActual * tamanoPagina, estudiantesFiltrados.Count()))
+                            de @estudiantesFiltrados.Count() registros
+                        </small>
+                    </div>
+
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PrimeraPagina">« Primera</button>
+                            </li>
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaAnterior">‹ Anterior</button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Página @paginaActual de @totalPaginas</span>
+                            </li>
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaSiguiente">Siguiente ›</button>
+                            </li>
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="UltimaPagina">Última »</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer text-center">
+            <a href="/ucne/crear-solicitud" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Estudiante> estudiantes = new();
+
+    private string filtroNombre = "";
+    private string filtroMatricula = "";
+    private string filtroCarrera = "";
+    private string filtroEgresado = "";
+
+    private int paginaActual = 1;
+    private int tamanoPagina = 10;
+    private int totalPaginas => (int)Math.Ceiling((double)estudiantesFiltrados.Count() / tamanoPagina);
+
+    private IEnumerable<Estudiante> estudiantesFiltrados => estudiantes
+        .Where(e =>
+            (string.IsNullOrWhiteSpace(filtroNombre) ||
+                $"{e.Nombres} {e.Apellidos}".Contains(filtroNombre, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroMatricula) ||
+                e.Matricula.Contains(filtroMatricula, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroCarrera) ||
+                e.Carrera.Contains(filtroCarrera, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroEgresado) ||
+                (filtroEgresado == "true" && e.EsEgresado) ||
+                (filtroEgresado == "false" && !e.EsEgresado))
+        )
+        .OrderBy(e => e.Nombres);
+
+    private IEnumerable<Estudiante> estudiantesPaginados => estudiantesFiltrados
+        .Skip((paginaActual - 1) * tamanoPagina)
+        .Take(tamanoPagina);
+
+    protected override async Task OnInitializedAsync()
+    {
+        estudiantes = await estudianteService.Listar(e => e.Activo);
+    }
+
+    private void SeleccionarEstudiante(int estudianteId)
+    {
+        Navigation.NavigateTo($"/ucne/crear-solicitud/{estudianteId}");
+    }
+
+    private void LimpiarFiltros()
+    {
+        filtroNombre = "";
+        filtroMatricula = "";
+        filtroCarrera = "";
+        filtroEgresado = "";
+        paginaActual = 1;
+    }
+
+    private void PrimeraPagina() => paginaActual = 1;
+    private void PaginaAnterior() { if (paginaActual > 1) paginaActual--; }
+    private void PaginaSiguiente() { if (paginaActual < totalPaginas) paginaActual++; }
+    private void UltimaPagina() => paginaActual = totalPaginas;
+}
