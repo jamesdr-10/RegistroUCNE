@@ -21,42 +21,49 @@
     <nav class="nav flex-column justify-content-between h-100">
         <div>
             <div class="nav-item px-3">
-                <button class="nav-link btn btn-link text-start" @onclick="IrARegistrosAcademicos">
+                <a class="nav-link btn btn-link text-start" href="/ucne/inicio">
+                    <span class="bi bi-house-door fs-4 mb-4" aria-hidden="true"></span>
+                    <span class="nav-text">Inicio</span>
+                </a>
+            </div>
+
+            <div class="nav-item px-3">
+                <a class="nav-link btn btn-link text-start" href="/ucne/registros">
                     <span class="bi bi-file-text-fill fs-4 mb-4" aria-hidden="true"></span>
                     <span class="nav-text">Registros Académicos</span>
-                </button>
+                </a>
             </div>
 
             <div class="nav-item px-3">
-                <button class="nav-link btn btn-link text-start" @onclick="IrAEstudiantes">
+                <a class="nav-link btn btn-link text-start" href="/ucne/registro-estudiantes">
                     <span class="bi bi-person-plus-fill fs-4 mb-4" aria-hidden="true"></span>
                     <span class="nav-text">Estudiantes</span>
-                </button>
+                </a>
             </div>
 
             <div class="nav-item px-3">
-                <button class="nav-link btn btn-link text-start" @onclick="IrARegistradores">
+                <a class="nav-link btn btn-link text-start" href="/ucne/registro-registradores">
                     <span class="bi bi-person-badge-fill fs-4 mb-4" aria-hidden="true"></span>
                     <span class="nav-text">Registradores</span>
-                </button>
+                </a>
             </div>
         </div>
 
         <div class="nav-item px-3 mb-3">
-             <button class="nav-link btn btn-link text-start text-warning" @onclick="IrAHabilitar">
+             <a class="nav-link btn btn-link text-start text-warning" href="/ucne/habilitar">
                 <span class="bi bi-arrow-repeat fs-4 mb-4" aria-hidden="true"></span>
                 <span class="nav-text">Reactivar Entidades</span>
-            </button>
+            </a>
 
-            <button class="nav-link btn btn-link text-start text-info" @onclick="IrAGuia">
+            <a class="nav-link btn btn-link text-start text-info" href="/ucne/ayuda-llenado">
                 <span class="bi bi-info-circle-fill fs-4 mb-4" aria-hidden="true"></span>
                 <span class="nav-text">Ayuda / Guía</span>
-            </button>
+            </a>
 
-            <button class="nav-link btn btn-link text-start text-secondary" @onclick="IrAConfiguracion">
+            <a class="nav-link btn btn-link text-start text-secondary" href="/ucne/configuracion-sistema">
                 <span class="bi bi-gear fs-4 mb-4" aria-hidden="true"></span>
                 <span class="nav-text">Configuración</span>
-            </button>
+            </a>
 
             <a class="nav-link btn btn-link text-start text-success" href="/ucne/creditos">
                 <span class="bi bi-stars fs-4 mb-4" aria-hidden="true"></span>
@@ -72,57 +79,10 @@
 </div>
 
 @code {
-    private void IrAEstudiantes()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/registro-estudiantes");
-        else
-            Navigation.NavigateTo("/");
-    }
-
-    private void IrARegistradores()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/registro-registradores");
-        else
-            Navigation.NavigateTo("/");
-    }
-
-    private void IrARegistrosAcademicos()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/registros");
-        else
-            Navigation.NavigateTo("/");
-    }
-
-    private void IrAHabilitar()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/habilitar");
-        else
-            Navigation.NavigateTo("/"); 
-    }
-
-    private void IrAGuia()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/ayuda-llenado");
-        else
-            Navigation.NavigateTo("/");
-    }
-    
-    private void IrAConfiguracion()
-    {
-        if (session.RegistradorId > 0)
-            Navigation.NavigateTo("/ucne/configuracion-sistema");
-        else
-            Navigation.NavigateTo("/");
-    }
-
-    private void CerrarSesion()
+    private void CerrarSesion() 
     {
         session.RegistradorId = 0;
         Navigation.NavigateTo("/", forceLoad: true);
+
     }
 }

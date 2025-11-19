@@ -1,0 +1,151 @@
+.inicio-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.inicio-container .card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.inicio-container .card-header {
+    background-color: #003366;
+    color: white;
+    padding: 1.5rem;
+}
+
+.inicio-container .card-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.inicio-container .card-header .text-muted {
+    color: #ffffff !important;
+}
+
+.inicio-container .card-body {
+    padding: 2rem;
+}
+
+.inicio-container .card-body .row {
+    margin-top: 2rem;
+}
+
+.inicio-container .card-footer {
+    background-color: #f7fafc;
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.inicio-container .card-footer .btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inicio-container .card-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+.inicio-container .card-body .col-12 {
+    margin-bottom: 2rem;
+}
+
+.inicio-container .card-body .card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.inicio-container .card-body .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.inicio-container .card-body .card.border-primary {
+    border-left: 5px solid #20359E;
+}
+
+.inicio-container .card-body .card.border-warning {
+    border-left: 5px solid #ED8936;
+}
+
+.inicio-container .card-body .card.border-success {
+    border-left: 5px solid #28A745;
+}
+
+.inicio-container .card-body .card.border-info {
+    border-left: 5px solid #17A2B8;
+}
+
+.inicio-container .card-body h5 {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.inicio-container .card-body h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 1rem;
+}
+
+.inicio-container .card-footer .btn-primary {
+    background-color: #20359E;
+    border-color: #20359E;
+}
+
+.inicio-container .card-footer .btn-primary:hover {
+    background-color: #174493;
+    border-color: #174493;
+}
+
+.inicio-container .card-footer .btn-info {
+    background-color: #4299E1;
+    border-color: #4299E1;
+}
+
+.inicio-container .card-footer .btn-info:hover {
+    background-color: #3182CE;
+    border-color: #3182CE;
+}
+
+.inicio-container .card-footer .btn-success {
+    background-color: #28A745;
+    border-color: #239D3C;
+}
+
+.inicio-container .card-footer .btn-success:hover {
+    background-color: #218838;
+    border-color: #1F7A32;
+}
+
+@media (max-width: 768px) {
+    .inicio-container {
+        padding: 1rem;
+    }
+
+    .inicio-container .card-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .inicio-container .card-body .row {
+        margin-top: 1rem;
+    }
+
+    .inicio-container .card-footer .btn {
+        font-size: 1rem;
+    }
+
+    .inicio-container .card-body .col-12 {
+        margin-bottom: 1rem;
+    }
+}
