@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RegistroUCNE")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cbe731e7d33ffdb83c7e4b074e58e1852748af55")]
 [assembly: System.Reflection.AssemblyProductAttribute("RegistroUCNE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RegistroUCNE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -190,7 +190,7 @@
         if (await estudianteService.Guardar(estudiante))
         {
             mostrarModalConfirmacion = false;
-            Navigation.NavigateTo($"/ucne/registro-estudiantes/{session.RegistradorId}");
+            Navigation.NavigateTo("/ucne/registro-estudiantes");
         }
         else
         {

@@ -60,7 +60,7 @@
             </div>
 
             <div class="card-footer text-center">
-                <a href="/ucne/registro-estudiantes/@session.RegistradorId" class="btn btn-secondary me-2">
+                <a href="/ucne/registro-estudiantes" class="btn btn-secondary me-2">
                     <span class="bi bi-arrow-left me-2"></span> Volver
                 </a>
 
@@ -110,7 +110,7 @@
         
         if (await estudianteService.Guardar(estudiante))
         {
-            Navigation.NavigateTo($"/ucne/registro-estudiantes/{session.RegistradorId}");
+            Navigation.NavigateTo("/ucne/registro-estudiantes");
         } else
         {
             errorMensaje = "Error al guardar el estudiante. Intente nuevamente.";
