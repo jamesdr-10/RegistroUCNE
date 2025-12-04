@@ -179,7 +179,7 @@
         errorMensaje = string.Empty;
         errorConfirmacion = string.Empty;
 
-        if (BCrypt.Net.BCrypt.Verify(passwordConfirmacion, registrador.Contrasena))
+        if (!BCrypt.Net.BCrypt.Verify(passwordConfirmacion, registrador.Contrasena))
         {
             errorConfirmacion = "La contraseña no coincide.";
             return;
