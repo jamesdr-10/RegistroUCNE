@@ -5,6 +5,7 @@
 @inject SessionService session
 @inject ConfiguracionSistemaService configuracionService
 @inject RegistradorService registradorService
+@inject TipoDocumentoService tipoDocumentoService
 @inject NavigationManager Navigation
 
 <PageTitle>Configuración del Sistema</PageTitle>
@@ -36,6 +37,34 @@
                 <small class="text-muted">
                     Si se activa, todos los documentos finalizados deberán tener un archivo PDF subido y un hash generado.
                 </small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label"><strong>Documentos más solicitados (máximo 5)</strong></label>
+
+                <select multiple class="form-select"
+                        style="height: 200px;"
+                        @onchange="OnSeleccionFavoritos">
+
+                    @foreach (var doc in listaDocumentos)
+                    {
+                        <option value="@doc.TipoDocumentoId"
+                                selected="@config.DocumentosFavoritos.Contains(doc.TipoDocumentoId)">
+                            @doc.Nombre
+                        </option>
+                    }
+                </select>
+
+                <small class="text-muted">
+                    Seleccione hasta 5 documentos. Estos aparecerán como accesos rápidos en las pantallas de solicitudes.
+                </small>
+
+                @if (!string.IsNullOrEmpty(errorFavoritos))
+                {
+                    <div class="text-danger mt-2">
+                        <i class="bi bi-exclamation-circle me-2"></i>@errorFavoritos
+                    </div>
+                }
             </div>
 
             <div class="mb-3">
@@ -123,6 +152,9 @@
     private ConfiguracionSistema config = new();
     private Registrador registrador = new();
 
+    private List<TipoDocumento> listaDocumentos = new();
+    private string? errorFavoritos;
+
     private bool isLoading = false;
     private bool guardadoExitoso = false;
     private string? mensaje;
@@ -134,7 +166,27 @@
     protected override async Task OnInitializedAsync()
     {
         config = await configuracionService.Obtener();
+        listaDocumentos = await tipoDocumentoService.Listar();
+
         registrador = await registradorService.BuscarPorId(session.RegistradorId) ?? new();
+    }
+
+    private void OnSeleccionFavoritos(ChangeEventArgs e)
+    {
+        errorFavoritos = null;
+
+        var seleccionados = new List<int>();
+
+        foreach (var elemento in (IEnumerable<string>)e.Value!)
+            seleccionados.Add(int.Parse(elemento));
+
+        if (seleccionados.Count > 5)
+        {
+            errorFavoritos = "Solo puedes seleccionar un máximo de 5 documentos.";
+            return;
+        }
+
+        config.DocumentosFavoritos = seleccionados;
     }
 
     private void MostrarModalConfirmacion()

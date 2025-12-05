@@ -91,26 +91,28 @@
             }
         </div>
 
-        <div class="card-footer text-center">
-            <a href="/ucne/registros" class="btn btn-secondary me-2">
-                <span class="bi bi-arrow-left me-2"></span> Volver
-            </a>
+        <div class="card-footer">
+            <div class="d-flex justify-content-center">
+                <a href="/ucne/registros" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
 
-            <button class="btn btn-success"
-                    @onclick="MostrarModalConfirmacion"
-                    disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0)">
+                <button class="btn btn-success"
+                        @onclick="MostrarModalConfirmacion"
+                        disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0)">
 
-                @if (isLoading)
-                {
-                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                    <span>Guardando...</span>
-                }
-                else
-                {
-                    <span class="bi bi-save me-2"></span>
-                    <span>Guardar</span>
-                }
-            </button>
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+            </div>
         </div>
     </div>
 </div>

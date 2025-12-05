@@ -10,6 +10,27 @@ public class ConfiguracionSistema
     public bool RequiereArchivoConHash { get; set; } = false;
     public DateTime UltimaActualizacion { get; set; } = DateTime.UtcNow;
 
+    public string DocumentosFavoritosRaw { get; set; } = "";
+
+    [NotMapped]
+    public List<int> DocumentosFavoritos
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(DocumentosFavoritosRaw))
+                return new List<int>();
+
+            return DocumentosFavoritosRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(int.Parse)
+                .ToList();
+        }
+        set
+        {
+            DocumentosFavoritosRaw = string.Join(",", value);
+        }
+    }
+
     [NotMapped]
     public DateTime UltimaActualizacionLocal
     {

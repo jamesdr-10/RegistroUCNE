@@ -17,12 +17,16 @@ public class ConfiguracionSistemaService(IDbContextFactory<Contexto> DbFactory)
             {
                 ConfiguracionSistemaId = 1,
                 RequiereArchivoConHash = false,
-                UltimaActualizacion = DateTime.UtcNow
+                UltimaActualizacion = DateTime.UtcNow,
+                DocumentosFavoritosRaw = ""
             };
 
             contexto.ConfiguracionesSistema.Add(config);
             await contexto.SaveChangesAsync();
         }
+
+        if (config.DocumentosFavoritosRaw == null)
+            config.DocumentosFavoritosRaw = "";
 
         return config;
     }

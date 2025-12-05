@@ -7,6 +7,7 @@
 @inject TipoDocumentoService tipoDocumentoService
 @inject DocumentoService documentoService
 @inject RegistradorService registradorService
+@inject ConfiguracionSistemaService configuracionService
 @inject NavigationManager Navigation
 
 <PageTitle>Crear Solicitud de Documento</PageTitle>
@@ -51,6 +52,27 @@
 
             <div class="mb-3">
                 <label class="form-label"><strong>Tipo de Documento</strong></label>
+                @if (documentosFavoritos.Any())
+                {
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Accesos rápidos</strong></label>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            @foreach (var doc in documentosFavoritos)
+                            {
+                                <button class="btn btn-outline-primary"
+                                        @onclick="() => SeleccionarDocumentoRapido(doc.TipoDocumentoId)">
+                                    @doc.Nombre
+                                </button>
+                            }
+                        </div>
+
+                        <small class="text-muted">
+                            Estos documentos fueron configurados como los más solicitados.
+                        </small>
+                    </div>
+                }
+
                 <InputSelect class="form-select" @bind-Value="documento.TipoDocumentoId">
                     <option value="0" disabled>Seleccione un tipo de documento</option>
                     @foreach (var tipo in tiposDocumento)
@@ -84,6 +106,11 @@
                 <InputDate class="form-control" @bind-Value="documento.FechaSolicitudLocal" />
             </div>
 
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="tieneRecibo" />
+                <label class="form-check-label"><strong>Recibo de pago</strong></label>
+            </div>
+
             @if (!string.IsNullOrEmpty(errorMensaje))
             {
                 <div class="error-message-container">
@@ -95,32 +122,37 @@
             }
         </div>
 
-        <div class="card-footer text-center">
-            <a href="/ucne/registros" class="btn btn-secondary me-2">
-                <span class="bi bi-arrow-left me-2"></span> Volver
-            </a>
+        <div class="card-footer">
+            <div class="d-flex justify-content-center">
+                 <a href="/ucne/registros" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
 
-            <button class="btn btn-success"
-                    @onclick="Guardar"
-                    disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0)">
+                <button class="btn btn-success"
+                        @onclick="Guardar"
+                        disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0 || !tieneRecibo)">
 
-                @if (isLoading)
-                {
-                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                    <span>Guardando...</span>
-                }
-                else
-                {
-                    <span class="bi bi-save me-2"></span>
-                    <span>Guardar</span>
-                }
-            </button>
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 @code {
     [Parameter] public int? EstudianteId { get; set; }
+    
+    private ConfiguracionSistema configSistema = new();
+    private List<TipoDocumento> documentosFavoritos = new();
 
     private Documento documento = new();
     private List<TipoDocumento> tiposDocumento = new();
@@ -132,6 +164,7 @@
     private string filtroMatricula = string.Empty;
     private string nombreEstudianteSeleccionado = string.Empty;
     private bool mostrarAlertaSeleccion = false;
+    private bool tieneRecibo = false;
 
     private IEnumerable<Estudiante> estudiantesFiltrados =>
         string.IsNullOrWhiteSpace(filtroMatricula)
@@ -148,6 +181,11 @@
             .ToList();
 
         tiposDocumento = await tipoDocumentoService.Listar();
+        configSistema = await configuracionService.Obtener();
+
+        documentosFavoritos = tiposDocumento
+            .Where(t => configSistema.DocumentosFavoritos.Contains(t.TipoDocumentoId))
+            .ToList();
 
         if (EstudianteId.HasValue)
         {
@@ -170,6 +208,14 @@
                 mostrarAlertaSeleccion = true;
             }
         }
+    }
+
+    private void SeleccionarDocumentoRapido(int tipoDocumentoId)
+    {
+        documento.TipoDocumentoId = tipoDocumentoId;
+
+        if (tipoDocumentoId != 15)
+            documento.DescripcionAdicional = string.Empty;
     }   
 
     private async Task Guardar()
@@ -194,6 +240,13 @@
         if (documento.TipoDocumentoId == 15 && string.IsNullOrWhiteSpace(documento.DescripcionAdicional))
         {
             errorMensaje = "Debe especificar el nombre del documento en el campo adicional.";
+            isLoading = false;
+            return;
+        }
+
+        if (!tieneRecibo) 
+        {
+            errorMensaje = "Debe marcar el recibo de pago.";
             isLoading = false;
             return;
         }

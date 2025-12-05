@@ -96,19 +96,21 @@
                                     <td>@estudiante.Correo</td>
                                     <td>@(estudiante.EsEgresado ? "✅" : "❌")</td>
                                     <td>
-                                        <a href="/ucne/editar-estudiante/@estudiante.EstudianteId" 
-                                                class="btn btn-edit btn-sm" 
-                                                title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                        <div class="d-flex justify-content-center">
+                                            <a href="/ucne/editar-estudiante/@estudiante.EstudianteId" 
+                                                    class="btn btn-edit btn-sm" 
+                                                    title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
 
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                                title="Eliminar"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalEliminar"
-                                                @onclick="@(() => SeleccionarEstudiante(estudiante))">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    title="Eliminar"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalEliminar"
+                                                    @onclick="@(() => SeleccionarEstudiante(estudiante))">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             }

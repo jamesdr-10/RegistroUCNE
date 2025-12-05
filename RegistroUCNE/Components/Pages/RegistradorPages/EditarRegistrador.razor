@@ -55,30 +55,32 @@
                 </div>
             </div>
 
-            <div class="card-footer text-center">
-                <a href="/ucne/registro-registradores" class="btn btn-secondary me-2">
-                    <span class="bi bi-arrow-left me-2"></span> Volver
-                </a>
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <a href="/ucne/registro-registradores" class="btn btn-secondary me-2">
+                        <span class="bi bi-arrow-left me-2"></span> Volver
+                    </a>
 
-                <button class="btn btn-success"
-                        type="submit"
-                        disabled="@(isLoading || string.IsNullOrWhiteSpace(registradorAEditar.NombreUsuario)
-                                              || string.IsNullOrWhiteSpace(registradorAEditar.Correo)
-                                              || string.IsNullOrWhiteSpace(registradorAEditar.Direccion)
-                                              || string.IsNullOrWhiteSpace(registradorAEditar.Apellidos)
-                                              || string.IsNullOrWhiteSpace(registradorAEditar.Nombres)
-                                              || string.IsNullOrWhiteSpace(registradorAEditar.Contrasena))">
-                    @if (isLoading)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        <span>Guardando...</span>
-                    }
-                    else
-                    {
-                        <span class="bi bi-save me-2"></span>
-                        <span>Guardar</span>
-                    }
-                </button>
+                    <button class="btn btn-success"
+                            type="submit"
+                            disabled="@(isLoading || string.IsNullOrWhiteSpace(registradorAEditar.NombreUsuario)
+                                                || string.IsNullOrWhiteSpace(registradorAEditar.Correo)
+                                                || string.IsNullOrWhiteSpace(registradorAEditar.Direccion)
+                                                || string.IsNullOrWhiteSpace(registradorAEditar.Apellidos)
+                                                || string.IsNullOrWhiteSpace(registradorAEditar.Nombres)
+                                                || string.IsNullOrWhiteSpace(registradorAEditar.Contrasena))">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-save me-2"></span>
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
 
                 @if (!string.IsNullOrEmpty(errorMensaje))
                 {
