@@ -8,9 +8,9 @@ public class ConfiguracionSistema
     [Key]
     public int ConfiguracionSistemaId { get; set; }
     public bool RequiereArchivoConHash { get; set; } = false;
-    public DateTime UltimaActualizacion { get; set; } = DateTime.UtcNow;
-
+    public bool ReciboPagoObligatorio { get; set; } = false;
     public string DocumentosFavoritosRaw { get; set; } = "";
+    public DateTime UltimaActualizacion { get; set; } = DateTime.UtcNow;
 
     [NotMapped]
     public List<int> DocumentosFavoritos

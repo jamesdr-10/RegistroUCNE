@@ -40,6 +40,25 @@
             </div>
 
             <div class="mb-4">
+                <label class="form-label"><strong>Requerir recibo de pago obligatorio</strong></label>
+
+                <div class="form-check">
+                    <input type="checkbox"
+                        class="form-check-input"
+                        id="chkReciboObligatorio"
+                        @bind="config.ReciboPagoObligatorio" />
+
+                    <label class="form-check-label" for="chkReciboObligatorio">
+                        El sistema no permitirá guardar solicitudes sin recibo.
+                    </label>
+                </div>
+
+                <small class="text-muted">
+                    Si esta opción está activa, el registrador debe marcar el recibo de pago antes de guardar.
+                </small>
+            </div>
+
+            <div class="mb-4">
                 <label class="form-label"><strong>Documentos más solicitados (máximo 5)</strong></label>
 
                 <select multiple class="form-select"

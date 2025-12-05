@@ -130,7 +130,7 @@
 
                 <button class="btn btn-success"
                         @onclick="Guardar"
-                        disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0 || !tieneRecibo)">
+                        disabled="@(isLoading || documento.EstudianteId <= 0 || documento.TipoDocumentoId <= 0 || (!tieneRecibo && configSistema.ReciboPagoObligatorio))">
 
                     @if (isLoading)
                     {
@@ -244,9 +244,9 @@
             return;
         }
 
-        if (!tieneRecibo) 
+        if (configSistema.ReciboPagoObligatorio && !tieneRecibo) 
         {
-            errorMensaje = "Debe marcar el recibo de pago.";
+            errorMensaje = "Debe marcar el recibo de pago (obligatorio).";
             isLoading = false;
             return;
         }
