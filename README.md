@@ -81,17 +81,61 @@ Este sistema transforma ese proceso en una **plataforma web centralizada**, perm
 
 ---
 
-## 💻 Requisitos del Sistema
+## ⚙️ Configuración del Proyecto (IMPORTANTE)
 
-### Servidor
-- .NET 10 SDK / Runtime
-- PostgreSQL 14+
-- Windows Server o Linux
-- 4 GB RAM mínimo (8 GB recomendado)
+Antes de ejecutar el sistema, es **obligatorio configurar correctamente** el archivo `appsettings.json`.
 
-### Cliente
-- Navegador web moderno (Chrome, Edge, Firefox)
-- No requiere instalación local
+---
+
+### 🗄️ Base de Datos (PostgreSQL)
+
+El sistema **requiere obligatoriamente una base de datos PostgreSQL**.
+
+Debes proporcionar una **connection string válida**, ya sea local o en la nube (Neon, Supabase, Railway, etc.).
+
+Ejemplo:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=TU_HOST;Port=5432;Database=TU_DB;Username=TU_USUARIO;Password=TU_PASSWORD;SSL Mode=Require;Trust Server Certificate=true;"
+  }
+}
+````
+
+> ⚠️ **Nota:**
+> El sistema no está diseñado para SQL Server ni SQLite.
+> **PostgreSQL es obligatorio.**
+
+---
+
+### ☁️ Almacenamiento de Archivos (Cloudflare R2)
+
+Los documentos PDF se almacenan utilizando **Cloudflare R2**.
+
+Debes completar manualmente esta sección en `appsettings.json`:
+
+```json
+"R2": {
+  "AccountId": "",
+  "AccessKey": "",
+  "SecretKey": "",
+  "BucketName": "",
+  "PublicBaseUrl": ""
+}
+```
+
+Descripción de campos:
+
+* **AccountId:** ID de la cuenta Cloudflare
+* **AccessKey:** Clave de acceso al bucket
+* **SecretKey:** Clave secreta
+* **BucketName:** Nombre del bucket
+* **PublicBaseUrl:** URL pública base para visualizar los PDFs
+
+> ⚠️ **Seguridad:**
+> Nunca subas credenciales reales al repositorio.
+> Usa `appsettings.Development.json` o variables de entorno.
 
 ---
 
@@ -99,9 +143,9 @@ Este sistema transforma ese proceso en una **plataforma web centralizada**, perm
 
 Al iniciar el proyecto por primera vez, se crea automáticamente un usuario administrador:
 
-- **Usuario:** `admin`  
-- **Contraseña:** `Admin123*`  
-- **Rol:** Administrador  
+* **Usuario:** `admin`
+* **Contraseña:** `Admin123*`
+* **Rol:** Administrador
 
 > ⚠️ **Recomendación:** cambiar la contraseña al primer inicio en un entorno productivo.
 
@@ -111,50 +155,45 @@ Al iniciar el proyecto por primera vez, se crea automáticamente un usuario admi
 
 Los documentos académicos (PDF) se almacenan en la nube utilizando **Cloudflare R2**, lo que permite:
 
-- Bajo costo de almacenamiento
-- Sin costos por tráfico de salida
-- Escalabilidad
-- Integridad del documento mediante hash
+* Bajo costo de almacenamiento
+* Sin costos por tráfico de salida
+* Escalabilidad
+* Integridad del documento mediante hash SHA256
 
 ---
 
 ## ⚠️ Limitaciones Conocidas y Aspectos a Mejorar
 
-Aunque el sistema es completamente funcional, existen algunas **limitaciones conocidas**, propias de un proyecto académico:
+Aunque el sistema es funcional, presenta algunas **limitaciones conocidas**, propias de un proyecto académico:
 
-- **Importación CSV (Dirección):**  
-  El campo *Dirección* no admite comas (`,`) dentro del archivo CSV, ya que estas se interpretan como separadores de columnas, lo que puede provocar errores de importación.
+* **Importación CSV (Dirección):**
+  El campo *Dirección* no admite comas (`,`) dentro del archivo CSV, ya que estas se interpretan como separadores de columnas.
 
-- **Gestión de pagos:**  
-  Actualmente no se permite adjuntar el **recibo de pago** del estudiante a la solicitud.  
-  En versiones futuras, sería ideal permitir subir este comprobante para evitar el registro de solicitudes no pagadas.
+* **Gestión de pagos:**
+  Actualmente no se permite adjuntar el **recibo de pago** del estudiante.
+  En versiones futuras sería ideal permitir subir este comprobante.
 
-- **Notificaciones a estudiantes:**  
-  El sistema no incluye notificaciones automáticas (correo electrónico u otro medio).  
-  Una mejora futura podría notificar:
-  - Cambios de estado de la solicitud
-  - Disponibilidad del documento final
-  - Enlaces seguros al PDF
+* **Notificaciones a estudiantes:**
+  El sistema no incluye notificaciones automáticas.
+  Podría mejorarse para notificar:
 
-Estas limitaciones representan **oportunidades claras de mejora**, sin afectar el flujo principal del sistema.
+  * Cambios de estado
+  * Disponibilidad del documento
+  * Enlaces seguros al PDF
+
+Estas limitaciones representan **oportunidades claras de mejora**.
 
 ---
 
 ## 🔮 Proyección y Continuidad del Proyecto
 
-Este proyecto ha sido concebido como una **base sólida y extensible**, diseñada para:
+Este proyecto fue concebido como una **base sólida y extensible**, diseñada para:
 
-- Ser continuada por **estudiantes** en futuros proyectos académicos  
-- Ser mejorada por **desarrolladores profesionales**  
-- Evolucionar progresivamente hacia una solución institucional completa  
+* Continuación por **estudiantes**
+* Evolución por **desarrolladores profesionales**
+* Futuro uso institucional en la UCNE
 
-Aunque fue diseñado inicialmente para un entorno interno de la UCNE, **actualmente no se considera completamente listo para uso productivo**, debido a la necesidad de:
-
-- Más controles administrativos avanzados  
-- Integración de pagos y notificaciones  
-- Validaciones adicionales y pruebas en producción  
-
-No obstante, el sistema representa un **prototipo académico avanzado**, con una arquitectura moderna y buenas prácticas, capaz de convertirse en una solución real mediante futuras iteraciones.
+Actualmente **no se considera completamente listo para producción**, pero sí un **prototipo académico avanzado**, con arquitectura moderna, buenas prácticas y potencial real de implementación.
 
 ---
 
@@ -162,12 +201,12 @@ No obstante, el sistema representa un **prototipo académico avanzado**, con una
 
 Proyecto desarrollado por estudiantes de la **Universidad Católica Nordestana (UCNE)**:
 
-- **Adonis Mercado Hidalgo** – UI/UX y desarrollo general  
-- **James Jesús de Peña Rodríguez** – Backend y arquitectura  
-- **Jorge Ariel Moya De Peña** – Base de datos y apoyo técnico  
-- **Juan Pablo Guillén Zorrilla** – Desarrollo y análisis  
-- **James Enmanuel Ureña Paulino** – Apoyo en desarrollo  
-- **Luis Ángel Gabriel Morillo** – Funcionalidades y documentación  
+* **Adonis Mercado Hidalgo** – UI/UX y desarrollo general
+* **James Jesús de Peña Rodríguez** – Backend y arquitectura
+* **Jorge Ariel Moya De Peña** – Base de datos y apoyo técnico
+* **Juan Pablo Guillén Zorrilla** – Desarrollo y análisis
+* **James Enmanuel Ureña Paulino** – Apoyo en desarrollo
+* **Luis Ángel Gabriel Morillo** – Funcionalidades y documentación
 
 ---
 
@@ -179,14 +218,8 @@ El uso del sistema está regulado por un **Contrato de Licencia de Usuario Final
 
 ---
 
-## 📌 Notas Finales
+## 📌 Notas Finales 
 
-- El sistema está diseñado para ser **escalable y mantenible**
-- Puede servir como base para futuros proyectos académicos o profesionales
-- Representa una solución moderna, segura y de bajo costo para la institución
-
----
-
-🎓 **Universidad Católica Nordestana (UCNE)**  
-Departamento de Registro Académico  
-Proyecto Académico
+- El sistema está diseñado para ser **escalable y mantenible** 
+- Puede servir como base para futuros proyectos académicos o profesionales 
+- Representa una solución moderna, segura y de bajo costo para la institución 
