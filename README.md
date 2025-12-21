@@ -106,6 +106,69 @@ Ejemplo:
 > ⚠️ **Nota:**
 > El sistema no está diseñado para SQL Server ni SQLite.
 > **PostgreSQL es obligatorio.**
+Sí 👍, **el contenido está correcto**, pero a nivel de **estilo README profesional** se puede pulir bastante para que:
+
+* Se vea consistente con el resto del documento
+* Sea más claro para un profesor o evaluador técnico
+* Use mejor jerarquía visual (títulos, listas, bloques de código)
+
+Te dejo **la versión mejorada**, lista para **copiar y pegar**, con el mismo contenido pero mejor presentado 👇
+
+---
+
+## 🗄️ Respaldo (Backup) de la Base de Datos
+
+Como parte de los **requisitos académicos del proyecto**, se incluye un **respaldo completo de la base de datos PostgreSQL**, generado desde **Neon** utilizando herramientas estándar (`pg_dump`).
+
+### 📁 Archivo de respaldo
+
+* **Nombre:** `registro_ucne.sql`
+* **Formato:** SQL plano (*Plain SQL*)
+
+### 📦 El respaldo incluye
+
+* Estructura completa de la base de datos
+
+  * Tablas
+  * Relaciones
+  * Claves primarias y foráneas
+* Datos de prueba utilizados por el sistema
+* Usuarios, roles y configuraciones iniciales
+
+Este archivo permite **reconstruir completamente la base de datos**, incluso si la instancia original en Neon es eliminada.
+
+---
+
+### 🔄 Restaurar la base de datos
+
+Para restaurar el respaldo en una nueva base de datos PostgreSQL, ejecuta el siguiente comando:
+
+```bash
+psql -h TU_HOST -U TU_USUARIO -d TU_DATABASE -f registro_ucne.sql
+```
+
+### ⚠️ Importante
+
+* Debes **crear previamente una base de datos vacía** en PostgreSQL antes de ejecutar el comando.
+* Asegúrate de que el usuario tenga permisos para:
+
+  * Crear tablas
+  * Insertar datos
+  * Crear relaciones
+
+---
+
+### 🎓 Nota Académica
+
+La inclusión de este respaldo garantiza que:
+
+* El proyecto puede ser evaluado **sin depender de servicios externos activos**
+* La base de datos puede ser restaurada para:
+
+  * Revisión
+  * Pruebas
+  * Exportación
+* Se cumple con el requisito de **acceso temporal a la base de datos**, incluso si el alojamiento remoto deja de estar disponible
 
 ---
 
