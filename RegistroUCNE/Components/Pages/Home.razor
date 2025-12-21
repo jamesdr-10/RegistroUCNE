@@ -1,0 +1,23 @@
+﻿@page "/"
+
+@inject NavigationManager Navigation
+
+@code {
+    [CascadingParameter] 
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateTask!;
+        var user = auth.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/inicio", true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/Account/Login", true);
+        }
+    }
+}

@@ -1,0 +1,135 @@
+﻿@page "/crear-estudiante"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+@rendermode InteractiveServer
+
+@inject EstudianteService estudianteService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Estudiante</PageTitle>
+<EditForm Model="estudiante" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="card-title"><strong>Crear Estudiante</strong></h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Nombres" placeholder="Ingrese los nombres" />
+                    <ValidationMessage For="(() => estudiante.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellidos</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Apellidos" placeholder="Ingrese los apellidos" />
+                    <ValidationMessage For="(() => estudiante.Apellidos)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Direccion" placeholder="Ingrese la dirección" />
+                    <ValidationMessage For="(() => estudiante.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Correo</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Correo" placeholder="Ingrese el correo" />
+                    <ValidationMessage For="(() => estudiante.Correo)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Teléfono</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Telefono" placeholder="Ingrese el teléfono" 
+                        oninput="formatTelefono(event)" />
+                    <ValidationMessage For="(() => estudiante.Telefono)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Matrícula</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Matricula" placeholder="Ingrese la matrícula" />
+                    <ValidationMessage For="(() => estudiante.Matricula)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Carrera</strong></label>
+                    <InputText class="form-control" @bind-Value="estudiante.Carrera" placeholder="Ingrese la carrera" />
+                    <ValidationMessage For="(() => estudiante.Carrera)" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="estudiante.EsEgresado" />
+                    <label class="form-check-label">Es Egresado</label>
+                </div>
+
+                 @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container">
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <a href="/listado-estudiantes" class="btn btn-secondary me-2">
+                        <span class="bi bi-arrow-left me-2"></span> Volver
+                    </a>
+
+                    <button class="btn btn-success" type="submit" disabled="@estaCargando">
+                        @if (estaCargando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-save me-2"></span>
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Estudiante estudiante = new Estudiante();
+    private bool estaCargando = false;
+    private string? errorMensaje;
+
+    private async Task Guardar()
+    {
+        errorMensaje = null;
+        estaCargando = true;
+        
+        if (await estudianteService.Guardar(estudiante))
+        {
+            Navigation.NavigateTo("/listado-estudiantes");
+        } else
+        {
+            errorMensaje = "Error al guardar el estudiante. Intente nuevamente.";
+        }
+
+        estaCargando = false;
+    }
+}
+
+@* Funcion para que escriba los guiones solo con Js *@
+<script>
+    function formatTelefono(e) {
+        let v = e.target.value.replace(/\D/g, "");
+
+        if (v.length > 3 && v.length <= 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3);
+        else if (v.length > 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3, 6) + "-" + v.slice(6, 10);
+        else
+            e.target.value = v;
+    }
+</script>

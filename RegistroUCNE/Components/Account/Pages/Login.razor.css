@@ -1,0 +1,114 @@
+.container-fluid {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #FAF852, #00509e);
+}
+
+.card {
+    width: 100%;
+    max-width: 30rem;
+    border-radius: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.25);
+    border: none;
+    padding: 2.5rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: transparent;
+    border: none;
+    padding-bottom: 1.5rem;
+}
+
+.logo-ucne {
+    height: 5.5rem;
+    width: auto;
+}
+
+.card-header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #002855;
+    line-height: 1.2;
+}
+
+.card-body {
+    padding: 0;
+}
+
+.card-body .card-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #002855;
+    text-align: center;
+}
+
+.form-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #002855;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #00509e;
+    background-color: #ffffff;
+    box-shadow: 0 0 0.375rem rgba(0, 80, 158, 0.35);
+    outline: none;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #003366;
+    border-color: #003366;
+}
+
+.card-footer {
+    background: transparent;
+    border: none;
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-success {
+    width: 100%;
+    max-width: 15rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    background-color: #30A628;
+    border: none;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-success:hover {
+    background-color: #097D01;
+    transform: translateY(-2px);
+}

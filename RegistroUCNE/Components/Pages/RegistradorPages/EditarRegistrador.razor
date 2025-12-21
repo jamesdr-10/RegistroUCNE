@@ -1,0 +1,258 @@
+﻿@page "/editar-registrador/{RegistradorId:int}"
+@attribute [Authorize(Roles = "Administrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Editar Registrador</PageTitle>
+
+@if (registradorNoEncontrado)
+{
+    <div class="container">
+        <div class="alert alert-danger text-center shadow">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Registrador no encontrado
+            </h4>
+
+            <p>El registrador que intenta editar no existe o fue eliminado.</p>
+            <hr />
+
+            <a href="/listado-registradores" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="registradorAEditar" OnValidSubmit="MostrarModalConfirmacion">
+        <DataAnnotationsValidator />
+
+        <div class="container" style="max-width: 1000px;">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h5 class="card-title"><strong>Editar Registrador</strong></h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombres</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.Nombres" placeholder="Ingrese los nombres" />
+                        <ValidationMessage For="(() => registradorAEditar.Nombres)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Apellidos</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.Apellidos" placeholder="Ingrese los apellidos" />
+                        <ValidationMessage For="(() => registradorAEditar.Apellidos)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Dirección</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.Direccion" placeholder="Ingrese la dirección" />
+                        <ValidationMessage For="(() => registradorAEditar.Direccion)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Correo</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.Email" placeholder="Ingrese el correo" />
+                        <ValidationMessage For="(() => registradorAEditar.Email)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Teléfono</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.PhoneNumber" placeholder="Ingrese el teléfono" 
+                            oninput="formatTelefono(event)" />
+                        <ValidationMessage For="(() => registradorAEditar.PhoneNumber)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre de Usuario</strong></label>
+                        <InputText class="form-control" @bind-Value="registradorAEditar.UserName" placeholder="Ingrese el usuario" />
+                        <ValidationMessage For="(() => registradorAEditar.UserName)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nueva Contraseña (opcional)</strong></label>
+                        <InputText class="form-control" type="password" @bind-Value="nuevaPassword" placeholder="Ingrese la contraseña" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMensaje))
+                    {
+                        <div class="error-message-container">
+                            <div class="error-message">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <div class="d-flex justify-content-center">
+                        <a href="/listado-registradores" class="btn btn-secondary me-2">
+                            <span class="bi bi-arrow-left me-2"></span> Volver
+                        </a>
+
+                        <button class="btn btn-success" type="submit" disabled="@estaCargando">
+
+                            @if (estaCargando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <span class="bi bi-save me-2"></span>
+                                <span>Guardar</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (mostrarModalConfirmacion)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-success">
+
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Edición
+                        </h5>
+
+                        <button class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>Para confirmar la edición, ingrese su contraseña: </p>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Contraseña</strong></label>
+                            <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorConfirmacion))
+                        {
+                            <div class="text-danger">
+                                <i class="bi bi-exclamation-circle me-2"></i>@errorConfirmacion
+                            </div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+
+                        <button class="btn btn-success" @onclick="ConfirmarGuardar">
+                            <i class="bi bi-check-circle"></i> Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int RegistradorId { get; set; }
+
+    private ApplicationUser registradorAEditar = new();
+    private ApplicationUser usuarioActual = new();
+
+    private string nuevaPassword = string.Empty;
+    private string passwordConfirmacion = string.Empty;
+
+    private string? errorMensaje;
+    private string? errorConfirmacion;
+
+    private bool estaCargando = false;
+    private bool registradorNoEncontrado = false;
+    private bool mostrarModalConfirmacion = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        registradorAEditar = await UserManager.FindByIdAsync(RegistradorId.ToString());
+
+        if (registradorAEditar == null)
+        {
+            registradorNoEncontrado = true;
+            return;
+        }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        usuarioActual = await UserManager.GetUserAsync(authState.User) ?? new ApplicationUser();
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        errorConfirmacion = null;
+        passwordConfirmacion = string.Empty;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorMensaje = null;
+        errorConfirmacion = null;
+
+        if (!await UserManager.CheckPasswordAsync(usuarioActual, passwordConfirmacion))
+        {
+            errorConfirmacion = "La contraseña no es correcta.";
+            return;
+        }
+
+        estaCargando = true;
+
+        var result = await UserManager.UpdateAsync(registradorAEditar);
+
+        if (!result.Succeeded)
+        {
+            errorMensaje = string.Join("<br>", result.Errors.Select(e => e.Description));
+            estaCargando = false;
+            mostrarModalConfirmacion = false;
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nuevaPassword))
+        {
+            var token = await UserManager.GeneratePasswordResetTokenAsync(registradorAEditar);
+            var resultPass = await UserManager.ResetPasswordAsync(registradorAEditar, token, nuevaPassword);
+
+            if (!resultPass.Succeeded)
+            {
+                errorMensaje = string.Join("<br>", resultPass.Errors.Select(e => e.Description));
+                estaCargando = false;
+                mostrarModalConfirmacion = false;
+                return;
+            }
+        }
+
+        mostrarModalConfirmacion = false;
+        Navigation.NavigateTo("/listado-registradores");
+    }
+}
+
+@* Funcion para que escriba los guiones solo con Js *@
+<script>
+    function formatTelefono(e) {
+        let v = e.target.value.replace(/\D/g, "");
+
+        if (v.length > 3 && v.length <= 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3);
+        else if (v.length > 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3, 6) + "-" + v.slice(6, 10);
+        else
+            e.target.value = v;
+    }
+</script>

@@ -1,0 +1,254 @@
+@page "/configuracion-sistema"
+@attribute [Authorize(Roles = "Administrador")]
+@rendermode InteractiveServer
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ConfiguracionSistemaService configuracionService
+@inject TipoDocumentoService tipoDocumentoService
+@inject NavigationManager Navigation
+
+<PageTitle>Configuración del Sistema</PageTitle>
+
+<div class="container" style="max-width: 1000px;">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title"
+                <i class="bi bi-gear me-2"></i> Configuración del Sistema
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-4">
+                <label class="form-label"><strong>Requerir archivo con hash al finalizar documento</strong></label>
+
+                <div class="form-check"> 
+                    <input type="checkbox" class="form-check-input" id="chkRequiereHash" 
+                        @bind="config.RequiereArchivoConHash" />
+
+                    <label class="form-check-label" for="chkRequiereHash">
+                        Activar validación de archivo PDF con hash
+                    </label>
+                </div>
+
+                <small class="text-muted">
+                    Si se activa, todos los documentos finalizados deberán tener un archivo PDF subido y un hash generado.
+                </small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label"><strong>Requerir recibo de pago obligatorio</strong></label>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="chkReciboObligatorio"
+                        @bind="config.ReciboPagoObligatorio" />
+
+                    <label class="form-check-label" for="chkReciboObligatorio">
+                        El sistema no permitirá guardar solicitudes sin recibo.
+                    </label>
+                </div>
+
+                <small class="text-muted">
+                    Si esta opción está activa, el registrador debe marcar el recibo de pago antes de guardar.
+                </small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label"><strong>Documentos más solicitados (máximo 5)</strong></label>
+
+                <select multiple class="form-select" style="height: 200px;" @onchange="OnSeleccionFavoritos">
+                    @foreach (var doc in listaDocumentos)
+                    {
+                        <option value="@doc.TipoDocumentoId"
+                                selected="@config.DocumentosFavoritos.Contains(doc.TipoDocumentoId)">
+                            @doc.Nombre
+                        </option>
+                    }
+                </select>
+
+                <small class="text-muted">
+                    Seleccione hasta 5 documentos. Estos aparecerán como accesos rápidos en las pantallas de solicitudes.
+                </small>
+
+                @if (!string.IsNullOrEmpty(errorFavoritos))
+                {
+                    <div class="text-danger mt-2">
+                        <i class="bi bi-exclamation-circle me-2"></i> @errorFavoritos
+                    </div>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Última actualización</strong></label>
+                <input type="text" class="form-control"
+                    value="@config.UltimaActualizacionLocal.ToString("dd/MM/yyyy HH:mm")" disabled />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-info-circle-fill me-2"></i> @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-success" @onclick="MostrarModalConfirmacion" disabled="@cargando">
+
+                    @if (cargando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-save me-2"></i>
+                        <span>Guardar</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Guardado
+                    </h5>
+
+                    <button class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Para confirmar la actualización, ingrese su contraseña: </p>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Contraseña</strong></label>
+                        <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorConfirmacion))
+                    {
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i> @errorConfirmacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+
+                    <button class="btn btn-success" @onclick="ConfirmarGuardar">
+                        <i class="bi bi-check-circle"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ConfiguracionSistema config = new();
+
+    private List<TipoDocumento> listaDocumentos = new();
+
+    private string? errorFavoritos;
+    private string? errorMensaje;
+    private string? errorConfirmacion;
+
+    private bool cargando = false;
+
+    private bool mostrarModalConfirmacion = false;
+    private string passwordConfirmacion = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        config = await configuracionService.Obtener();
+        listaDocumentos = await tipoDocumentoService.Listar();
+    }
+
+    private void OnSeleccionFavoritos(ChangeEventArgs e)
+    {
+        errorFavoritos = null;
+
+        var seleccionados = new List<int>();
+
+        foreach (var elemento in (IEnumerable<string>)e.Value!)
+            seleccionados.Add(int.Parse(elemento));
+
+        if (seleccionados.Count > 5)
+        {
+            errorFavoritos = "Solo puedes seleccionar un máximo de 5 documentos.";
+            return;
+        }
+
+        config.DocumentosFavoritos = seleccionados;
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        passwordConfirmacion = string.Empty;
+        errorConfirmacion = null;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorConfirmacion = null;
+        errorMensaje = null;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var identityUser = await UserManager.GetUserAsync(user);
+
+        if (identityUser is null)
+        {
+            errorConfirmacion = "No se pudo identificar al usuario actual.";
+            return;
+        }
+
+        if (!await UserManager.CheckPasswordAsync(identityUser, passwordConfirmacion))
+        {
+            errorConfirmacion = "La contraseña no coincide.";
+            return;
+        }
+
+        cargando = true;
+
+        try
+        {
+            config.UltimaActualizacionLocal = DateTime.Now;
+            await configuracionService.Guardar(config);
+
+            errorMensaje = "Configuración actualizada correctamente.";
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            mostrarModalConfirmacion = false;
+            cargando = false;
+        }
+    }
+}

@@ -1,0 +1,406 @@
+﻿@page "/editar-solicitud/{DocumentoId:int}"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ConfiguracionSistemaService configuracionService
+@inject EstudianteService estudianteService
+@inject SolicitudDocumentoService documentoService
+@inject TipoDocumentoService tipoDocumentoService
+@inject R2StorageService r2Service
+@inject NavigationManager Navigation
+
+<PageTitle>Editar Solicitud de Documento</PageTitle>
+
+@if (solicitudNoEncontrada)
+{
+    <div class="container">
+        <div class="alert alert-danger text-center shadow">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Solicitud no encontrada
+            </h4>
+
+            <p>La solicitud que intenta editar no existe o fue deshabilitada.</p>
+            <hr />
+
+            <a href="/listado-solicitudes" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title"><strong>Editar Solicitud de Documento</strong></h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estudiante</strong></label>
+                    <input type="text" class="form-control" readonly
+                        value="@($"{solicitud?.Estudiante?.Matricula} - {solicitud?.Estudiante?.Nombres} {solicitud?.Estudiante?.Apellidos}")" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tipo de Documento</strong></label>
+                    <InputSelect class="form-select" @bind-Value="solicitud!.TipoDocumentoId" disabled>
+                        <option value="0" disabled>Seleccione un tipo de documento</option>
+                        @foreach (var tipo in tiposDocumento)
+                        {
+                            <option value="@tipo.TipoDocumentoId">@tipo.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                @if (solicitud.TipoDocumentoId == 15)
+                {
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Descripción del documento</strong></label>
+                        <input type="text" class="form-control" value="@solicitud.DescripcionAdicional" readonly />
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estado del Documento</strong></label>
+                    <InputSelect class="form-select" @bind-Value="estadoProceso">
+                        <option value="Iniciado" disabled="@(solicitud.EstadoProceso != "Iniciado")">Iniciado</option>
+                        <option value="En Proceso" disabled="@(solicitud.EstadoProceso == "Finalizado")">En Proceso</option>
+                        <option value="Finalizado" disabled="@(solicitud.EstadoProceso == "Iniciado")">Finalizado</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Solicitud</strong></label>
+                    <InputDate class="form-control" @bind-Value="solicitud.FechaSolicitudLocal" />
+                </div>
+
+                @if (estadoProceso == "Finalizado")
+                {
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha de Finalización</strong></label>
+                        <InputDate class="form-control" @bind-Value="solicitud.FechaFinalizadoLocal" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha de Entrega</strong></label>
+                        <InputDate class="form-control" @bind-Value="solicitud.FechaEntregaLocal" />
+                    </div>
+
+                    @if (configuracion.RequiereArchivoConHash)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Archivo PDF</strong></label>
+                            <InputFile OnChange="OnFileSelected" accept=".pdf" />
+
+                            @if (archivoPdf != null)
+                            {
+                                <div class="mt-2 text-success small">
+                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+                                    Archivo cargado: <strong>@archivoPdf.Name</strong>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container">
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <a href="/listado-solicitudes" class="btn btn-secondary me-2">
+                        <span class="bi bi-arrow-left me-2"></span> Volver
+                    </a>
+
+                    <button class="btn btn-success" @onclick="MostrarModalConfirmacion"
+                        disabled="@(estaCargando || solicitud.EstudianteId <= 0 || solicitud.TipoDocumentoId <= 0)">
+
+                        @if (estaCargando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-save me-2"></span>
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+                
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Confirmar Edición
+                    </h5>
+
+                    <button class="btn-close btn-close-white" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Para confirmar la edición, ingrese su contraseña y describa brevemente el cambio realizado:</p>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Contraseña</strong></label>
+                        <input type="password" class="form-control" @bind="passwordConfirmacion" placeholder="Ingrese su contraseña" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Descripción del cambio</strong></label>
+                        <textarea class="form-control" rows="3"
+                            placeholder="Ejemplo: Subió el archivo PDF final y marcó el documento como Finalizado"
+                            @bind="descripcionTrabajo"></textarea>
+                        <small class="text-muted">Este texto se registrará en el historial del documento.</small>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorConfirmacion))
+                    {
+                        <div class="text-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i>@errorConfirmacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalConfirmacion">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+
+                    <button class="btn btn-success" @onclick="ConfirmarGuardar">
+                        <i class="bi bi-check-circle"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int DocumentoId { get; set; }
+
+    public ApplicationUser? usuarioActual;
+    private SolicitudDocumento solicitud = new();
+    private List<TipoDocumento> tiposDocumento = new();
+    private List<Estudiante> estudiantes = new();
+    private ConfiguracionSistema configuracion = new();
+
+    private IBrowserFile? archivoPdf;
+    private byte[]? TempFileBytes;
+
+    private string descripcionTrabajo = string.Empty;
+    private string estadoProceso = string.Empty;
+
+    private string? errorMensaje;
+    private bool estaCargando = false;
+
+    private bool mostrarModalConfirmacion = false;
+    private string passwordConfirmacion = string.Empty;
+    private string? errorConfirmacion;
+
+    private bool solicitudNoEncontrada = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        configuracion = await configuracionService.Obtener();
+
+        solicitud = await documentoService.Buscar(DocumentoId);
+
+        if (solicitud == null || !solicitud.Activo) 
+        {
+            solicitudNoEncontrada = true;
+            return;
+        }
+
+        estadoProceso = solicitud.EstadoProceso;
+
+        tiposDocumento = await tipoDocumentoService.Listar();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        usuarioActual = await UserManager.GetUserAsync(authState.User);
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            archivoPdf = e.File;
+
+            if (archivoPdf.Size > 10_000_000)
+            {
+                errorMensaje = "El archivo PDF no puede exceder los 10 MB.";
+                archivoPdf = null;
+                TempFileBytes = null;
+                return;
+            }
+
+            using var stream = archivoPdf.OpenReadStream(10_000_000);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+
+            TempFileBytes = ms.ToArray();
+            errorMensaje = null;
+        }
+        catch
+        {
+            errorMensaje = "Ocurrió un error al procesar el archivo.";
+            archivoPdf = null;
+            TempFileBytes = null;
+        }
+    }
+
+    private void MostrarModalConfirmacion()
+    {
+        errorConfirmacion = null;
+        passwordConfirmacion = string.Empty;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task ConfirmarGuardar()
+    {
+        errorMensaje = null;
+        errorConfirmacion = null;
+
+        if (usuarioActual is null)
+        {
+            errorConfirmacion = "No se pudo identificar al usuario actual.";
+            return;
+        }
+
+        if (!await UserManager.CheckPasswordAsync(usuarioActual, passwordConfirmacion))
+        {
+            errorConfirmacion = "La contraseña no coincide.";
+            return;
+        }
+
+        if (estadoProceso == "Finalizado")
+        {
+            if (!solicitud.FechaFinalizadoLocal.HasValue)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de finalización debe tener un valor.";
+                return;
+            }
+
+            if (solicitud.FechaFinalizadoLocal.Value.Date < solicitud.FechaSolicitudLocal.Date)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de finalización no puede ser menor que la fecha de solicitud.";
+                return;
+            }
+
+            if (solicitud.FechaEntregaLocal.HasValue &&
+            solicitud.FechaEntregaLocal.Value.Date < solicitud.FechaFinalizadoLocal.Value.Date)
+            {
+                mostrarModalConfirmacion = false;
+                errorMensaje = "La fecha de entrega no puede ser menor que la fecha de finalización.";
+                return;
+            }
+        }
+        else
+        {
+            solicitud.FechaFinalizadoLocal = null;
+            solicitud.FechaEntregaLocal = null;
+
+            TempFileBytes = null;
+            archivoPdf = null;
+        }
+
+        if (estadoProceso == "Finalizado" && configuracion.RequiereArchivoConHash && TempFileBytes == null && solicitud.DocumentoFinal == null)
+        {
+            mostrarModalConfirmacion = false;
+            errorMensaje = "Debe subir el archivo PDF final para completar la solicitud.";
+            return;
+        }   
+
+        estaCargando = true;
+
+        if (TempFileBytes != null && estadoProceso == "Finalizado")
+        {
+            var originalName = Path.GetFileName(archivoPdf?.Name ?? "documento.pdf");
+
+            var uniqueFileName = $"doc_{Guid.NewGuid():N}_{originalName}";
+            var r2Key = $"{DateTime.UtcNow:yyyy_MM_dd}/{uniqueFileName}";
+
+            var ruta = await r2Service.UploadAsync(
+                TempFileBytes,
+                r2Key,
+                archivoPdf!.ContentType
+            );
+
+            if (ruta == null)
+            {
+                errorMensaje = "Error subiendo archivo a R2.";
+                estaCargando = false;
+                return;
+            }
+
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var hash = BitConverter
+                .ToString(sha.ComputeHash(TempFileBytes))
+                .Replace("-", "")
+                .ToLower();
+
+            solicitud.DocumentoFinal = new Documento
+            {
+                NombreOriginal = originalName,
+                RutaR2 = ruta,
+                HashSha256 = hash,
+                TamanoBytes = archivoPdf.Size,
+                ContentType = archivoPdf.ContentType,
+                SubidoPorUsuarioId = usuarioActual!.Id,
+                Activo = true
+            };
+        }
+
+        solicitud.EstadoProceso = estadoProceso;
+
+        solicitud.TrabajosRegistrador.Add(new SolicitudDocumentoRegistrador
+        {
+            RegistradorId = usuarioActual.Id,
+            FechaTrabajoLocal = DateTime.Now,
+            DescripcionTrabajo = string.IsNullOrWhiteSpace(descripcionTrabajo)
+                ? "Sin descripción"
+                : descripcionTrabajo.Trim()
+        });
+
+        if (await documentoService.Guardar(solicitud))
+        {
+            TempFileBytes = null;
+            archivoPdf = null;
+
+            Navigation.NavigateTo("/listado-solicitudes");
+        }
+        else
+        {
+            errorMensaje = "Error al guardar la solicitud. Intente nuevamente.";
+        }
+
+        estaCargando = false;
+        mostrarModalConfirmacion = false;
+    }
+}

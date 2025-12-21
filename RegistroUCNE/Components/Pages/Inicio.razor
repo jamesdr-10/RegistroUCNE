@@ -1,0 +1,93 @@
+@page "/inicio"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+
+@inject SolicitudDocumentoService solicitudService
+@inject EstudianteService estudianteService
+@inject NavigationManager Navigation
+
+<PageTitle>Panel Principal</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h2 class="fw-bold text-primary">
+                👋 Bienvenido
+            </h2>
+            <p class="text-white">Centro de control del sistema académico UCNE</p>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-3">
+                    <div class="card shadow-lg border-primary h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-primary fw-bold">📄 Iniciados</h5>
+                            <h2 class="display-5">@iniciados</h2>
+                            <p class="text-muted small">Documentos con estado "Iniciado"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="card shadow-lg border-warning h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-warning fw-bold">⚙️ En Proceso</h5>
+                            <h2 class="display-5">@enProceso</h2>
+                            <p class="text-muted small">Documentos actualmente en trámite</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="card shadow-lg border-success h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-success fw-bold">✅ Finalizados</h5>
+                            <h2 class="display-5">@finalizados</h2>
+                            <p class="text-muted small">Documentos finalizados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="card shadow-lg border-info h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-info fw-bold">🎓 Estudiantes</h5>
+                            <h2 class="display-5">@totalEstudiantes</h2>
+                            <p class="text-muted small">Estudiantes activos en el sistema</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer text-center mt-4">
+            <h5 class="fw-bold mb-4">Accesos Rápidos</h5>
+            <div class="d-flex flex-wrap justify-content-center gap-4">
+                <a class="btn btn-primary px-4" href="/listado-solicitudes">
+                    <i class="bi bi-folder2-open me-2"></i> Solicitudes
+                </a>
+
+                <a class="btn btn-info px-4" href="/listado-estudiantes">
+                    <i class="bi bi-person-lines-fill me-2"></i> Estudiantes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int iniciados;
+    private int enProceso;
+    private int finalizados;
+    private int totalEstudiantes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var solicitudes = await solicitudService.Listar(s => s.Activo);
+        iniciados = solicitudes.Count(s => s.EstadoProceso == "Iniciado");
+        enProceso = solicitudes.Count(s => s.EstadoProceso == "En Proceso");
+        finalizados = solicitudes.Count(s => s.EstadoProceso == "Finalizado");
+
+        totalEstudiantes = (await estudianteService.Listar(e => e.Activo)).Count;
+    }
+}

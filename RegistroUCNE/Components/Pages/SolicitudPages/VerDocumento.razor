@@ -1,0 +1,63 @@
+@page "/ver-documento/{SolicitudDocumentoId:int}/{Token}"
+@rendermode InteractiveServer
+
+@inject IConfiguration config
+@inject SolicitudDocumentoService solicitudService
+
+@if (error != null)
+{
+    <div class="alert alert-danger text-center">@error</div>
+}
+else if (pdfUrl == null)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary"></div>
+        <p>Cargando documento...</p>
+    </div>
+}
+else
+{
+    <iframe src="@pdfUrl"
+            style="width:100%; height:90vh; border:none;"></iframe>
+}
+
+@code {
+    [Parameter] public int SolicitudDocumentoId { get; set; }
+    [Parameter] public string Token { get; set; } = string.Empty;
+
+    private string? pdfUrl;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var sol = await solicitudService.Buscar(SolicitudDocumentoId);
+
+        if (sol == null)
+        {
+            error = "Documento no encontrado.";
+            return;
+        }
+
+        if (sol.DocumentoFinal == null)
+        {
+            error = "No hay un documento asociado a esta solicitud.";
+            return;
+        }
+
+        if (!sol.DocumentoFinal.Activo)
+        {
+            error = "Este documento no está disponible.";
+            return;
+        }
+
+        if (sol.DocumentoFinal.TokenAcceso != Token)
+        {
+            error = "Acceso denegado.";
+            return;
+        }
+
+        var baseUrl = config["R2:PublicBaseUrl"];
+
+        pdfUrl = $"{baseUrl}/{sol.DocumentoFinal.RutaR2}";
+    }
+}

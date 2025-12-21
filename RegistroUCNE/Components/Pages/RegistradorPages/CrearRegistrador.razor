@@ -1,0 +1,160 @@
+﻿@page "/crear-registrador"
+@attribute [Authorize(Roles = "Administrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Registrador</PageTitle>
+
+<EditForm Model="registrador" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container" style="max-width: 1000px;">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title"><strong>Crear Registrador</strong></h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombres</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Nombres" placeholder="Ingrese los nombres" />
+                    <ValidationMessage For="(() => registrador.Nombres)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellidos</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Apellidos" placeholder="Ingrese los apellidos" />
+                    <ValidationMessage For="(() => registrador.Apellidos)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Direccion" placeholder="Ingrese la dirección" />
+                    <ValidationMessage For="(() => registrador.Direccion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Correo</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.Email" placeholder="Ingrese el correo" />
+                    <ValidationMessage For="(() => registrador.Email)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Teléfono</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.PhoneNumber" placeholder="Ingrese el teléfono" 
+                        oninput="formatTelefono(event)" />
+                    <ValidationMessage For="(() => registrador.PhoneNumber)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre de Usuario</strong></label>
+                    <InputText class="form-control" @bind-Value="registrador.UserName" placeholder="Ingrese el usuario" />
+                    <ValidationMessage For="(() => registrador.UserName)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Contraseña</strong></label>
+                    <InputText class="form-control" type="password" @bind-Value="password" placeholder="Ingrese la contraseña" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMensaje))
+                {
+                    <div class="error-message-container">
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <a href="/listado-registradores" class="btn btn-secondary me-2">
+                        <span class="bi bi-arrow-left me-2"></span> Volver
+                    </a>
+
+                    <button class="btn btn-success" type="submit" disabled="@estaCargando">
+
+                        @if (estaCargando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-save me-2"></span>
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ApplicationUser registrador = new();
+    private string password = "";
+
+    private bool estaCargando = false;
+    private string? errorMensaje;
+
+    private async Task Guardar()
+    {
+        errorMensaje = null;
+        estaCargando = true;
+
+        var usuarioExistente = await UserManager.FindByNameAsync(registrador.UserName!);
+        if (usuarioExistente != null)
+        {
+            errorMensaje = "El nombre de usuario ya existe.";
+            estaCargando = false;
+            return;
+        }
+
+        var emailExistente = await UserManager.FindByEmailAsync(registrador.Email!);
+        if (emailExistente != null)
+        {
+            errorMensaje = "El correo ya está registrado.";
+            estaCargando = false;
+            return;
+        }
+
+        var telefonoExistente = await UserManager.Users.AnyAsync(u => u.PhoneNumber == registrador.PhoneNumber);
+        if (telefonoExistente)
+        {
+            errorMensaje = "El teléfono ya está registrado.";
+            estaCargando = false;
+            return;
+        }
+
+        var resultado = await UserManager.CreateAsync(registrador, password);
+
+        if (!resultado.Succeeded)
+        {
+            errorMensaje = string.Join("<br>", resultado.Errors.Select(e => e.Description));
+            estaCargando = false;
+            return;
+        }
+
+        await UserManager.AddToRoleAsync(registrador, "Registrador");
+
+        Navigation.NavigateTo("/listado-registradores");
+    }
+}
+
+@* Funcion para que escriba los guiones solo con Js *@
+<script>
+    function formatTelefono(e) {
+        let v = e.target.value.replace(/\D/g, "");
+
+        if (v.length > 3 && v.length <= 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3);
+        else if (v.length > 6)
+            e.target.value = v.slice(0, 3) + "-" + v.slice(3, 6) + "-" + v.slice(6, 10);
+        else
+            e.target.value = v;
+    }
+</script>

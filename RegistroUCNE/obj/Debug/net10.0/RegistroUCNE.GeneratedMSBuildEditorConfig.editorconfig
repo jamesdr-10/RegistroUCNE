@@ -1,0 +1,187 @@
+is_global = true
+build_property.TargetFramework = net10.0
+build_property.TargetFramework = net10.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.RootNamespace = RegistroUCNE
+build_property.RootNamespace = RegistroUCNE
+build_property.ProjectDir = /Users/james/Projects/RegistroUCNE/RegistroUCNE/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /Users/james/Projects/RegistroUCNE/RegistroUCNE
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/AccessDenied.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL0FjY2Vzc0RlbmllZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/InvalidUser.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL0ludmFsaWRVc2VyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/Lockout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL0xvY2tvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/Manage/ChangePassword.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL01hbmFnZS9DaGFuZ2VQYXNzd29yZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/Manage/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL01hbmFnZS9JbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/Manage/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL01hbmFnZS9fSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL19JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Shared/ManageLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1NoYXJlZC9NYW5hZ2VMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Shared/ManageNavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1NoYXJlZC9NYW5hZ2VOYXZNZW51LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Shared/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1NoYXJlZC9SZWRpcmVjdFRvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Shared/StatusMessage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1NoYXJlZC9TdGF0dXNNZXNzYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Layout/EmptyLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvRW1wdHlMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/EstudiantePages/BuscarEstudiante.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Fc3R1ZGlhbnRlUGFnZXMvQnVzY2FyRXN0dWRpYW50ZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/EstudiantePages/CrearEstudiante.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Fc3R1ZGlhbnRlUGFnZXMvQ3JlYXJFc3R1ZGlhbnRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/EstudiantePages/EditarEstudiante.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Fc3R1ZGlhbnRlUGFnZXMvRWRpdGFyRXN0dWRpYW50ZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/EstudiantePages/ListadoEstudiantes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Fc3R1ZGlhbnRlUGFnZXMvTGlzdGFkb0VzdHVkaWFudGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/Inicio.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9JbmljaW8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/NotFound.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ob3RGb3VuZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/RegistradorPages/CrearRegistrador.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9SZWdpc3RyYWRvclBhZ2VzL0NyZWFyUmVnaXN0cmFkb3IucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/RegistradorPages/EditarRegistrador.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9SZWdpc3RyYWRvclBhZ2VzL0VkaXRhclJlZ2lzdHJhZG9yLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/RegistradorPages/ListadoRegistradores.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9SZWdpc3RyYWRvclBhZ2VzL0xpc3RhZG9SZWdpc3RyYWRvcmVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/SolicitudPages/CrearSolicitud.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Tb2xpY2l0dWRQYWdlcy9DcmVhclNvbGljaXR1ZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/SolicitudPages/EditarSolicitud.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Tb2xpY2l0dWRQYWdlcy9FZGl0YXJTb2xpY2l0dWQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/SolicitudPages/ListadoSolicitudes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Tb2xpY2l0dWRQYWdlcy9MaXN0YWRvU29saWNpdHVkZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/SolicitudPages/VerDocumento.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Tb2xpY2l0dWRQYWdlcy9WZXJEb2N1bWVudG8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/SolicitudPages/VerSolicitud.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Tb2xpY2l0dWRQYWdlcy9WZXJTb2xpY2l0dWQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/UtilidadPages/AyudaLlenado.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9VdGlsaWRhZFBhZ2VzL0F5dWRhTGxlbmFkby5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/UtilidadPages/ConfigSistema.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9VdGlsaWRhZFBhZ2VzL0NvbmZpZ1Npc3RlbWEucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/UtilidadPages/Creditos.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9VdGlsaWRhZFBhZ2VzL0NyZWRpdG9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Pages/UtilidadPages/HabilitarEntidades.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9VdGlsaWRhZFBhZ2VzL0hhYmlsaXRhckVudGlkYWRlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Sb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9fSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Account/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BY2NvdW50L1BhZ2VzL0xvZ2luLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-45750gswwr
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-jhckanplwy
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-u4uqmms3qf
+
+[/Users/james/Projects/RegistroUCNE/RegistroUCNE/Components/Layout/ReconnectModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvUmVjb25uZWN0TW9kYWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-a9ds8g4swd

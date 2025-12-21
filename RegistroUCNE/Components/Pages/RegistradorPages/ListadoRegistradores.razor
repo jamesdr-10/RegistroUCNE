@@ -1,0 +1,298 @@
+﻿@page "/listado-registradores"
+@attribute [Authorize(Roles = "Administrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+
+<PageTitle>Listado de Registradores</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title"><strong>Listado de Registradores</strong></h5>
+        </div>
+
+        <div class="card-body">
+            <div class="d-flex justify-content-md-end mb-3">
+                <a href="/crear-registrador" class="btn btn-primary bi bi-person-plus">
+                    Crear Registrador
+                </a>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label"><strong>Buscar por nombre o apellido</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Juan Pérez" @bind-Value="filtroNombre" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Buscar por correo</strong></label>
+                    <InputText class="form-control" placeholder="Ej: ejemplo@ucne.edu.do" @bind-Value="filtroCorreo" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Buscar por usuario</strong></label>
+                    <InputText class="form-control" placeholder="Ej: jlopez" @bind-Value="filtroUsuario" />
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end justify-content-md-end">
+                    <button class="btn btn-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th>ID</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Dirección</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Usuario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (!registradoresFiltrados.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No se han encontrado registradores.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var registrador in registradoresPaginados)
+                            {
+                                <tr class="text-center">
+                                    <td>@registrador.Id</td>
+                                    <td>@registrador.Nombres</td>
+                                    <td>@registrador.Apellidos</td>
+                                    <td>@registrador.Direccion</td>
+                                    <td>@registrador.Email</td>
+                                    <td>@registrador.PhoneNumber</td>
+                                    <td>@registrador.UserName</td>
+                                    <td>
+                                        @if (registrador.LockoutEnd != null && registrador.LockoutEnd > DateTimeOffset.UtcNow)
+                                        {
+                                            <span class="badge bg-danger">Bloqueado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="/editar-registrador/@registrador.Id" class="btn btn-edit btn-sm">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            @if (registrador.LockoutEnd == null || registrador.LockoutEnd <= DateTimeOffset.UtcNow)
+                                            {
+                                                <button class="btn btn-danger btn-sm" @onclick="@(() => SeleccionarRegistrador(registrador))">
+                                                    <i class="bi bi-person-lock"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <div class="mb-3">
+                <small class="text-muted">
+                    Mostrando <strong>@registradoresPaginados.Count()</strong> de 
+                    <strong>@registradoresFiltrados.Count()</strong> resultados — 
+                    Total: <strong>@registradores.Count</strong> registradores
+                </small>
+            </div>
+
+            @if (totalPaginas > 1)
+            {
+                <nav>
+                    <ul class="pagination justify-content-center flex-wrap mb-0">
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="PrimeraPagina">« Primera</button>
+                        </li>
+
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="PaginaAnterior">‹ Anterior</button>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Página @paginaActual de @totalPaginas</span>
+                        </li>
+
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="PaginaSiguiente">Siguiente ›</button>
+                        </li>
+
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="UltimaPagina">Última »</button>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+@if (mostrarModalDeshabilitar) 
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Deshabilitación
+                    </h5>
+
+                    <button class="btn-close btn-close-white" @onclick="CerrarModalDeshabilitar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea deshabilitar este registrador?</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>ID:</strong> <span class="badge bg-secondary">@registradorSeleccionado?.Id</span></li>
+                        <li class="list-group-item"><strong>Nombres:</strong> <span class="badge bg-primary">@registradorSeleccionado?.Nombres</span></li>
+                        <li class="list-group-item"><strong>Apellidos:</strong> <span class="badge bg-primary">@registradorSeleccionado?.Apellidos</span></li>
+                        <li class="list-group-item"><strong>Correo:</strong> <span class="badge bg-success">@registradorSeleccionado?.Email</span></li>
+                        <li class="list-group-item"><strong>Usuario:</strong> <span class="badge bg-info">@registradorSeleccionado?.UserName</span></li>
+                    </ul>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalDeshabilitar">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+
+                    <button class="btn btn-danger" @onclick="Deshabilitar">
+                        <i class="bi bi-person-lock"></i> Deshabilitar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ApplicationUser> registradores = new();
+    private ApplicationUser? registradorSeleccionado;
+
+    private string? errorMensaje;
+
+    private string filtroNombre = "";
+    private string filtroCorreo = "";
+    private string filtroUsuario = "";
+
+    private int paginaActual = 1;
+    private int tamanoPagina = 10;
+    private int totalPaginas => Math.Max(1, (int)Math.Ceiling((double)registradoresFiltrados.Count() / tamanoPagina));
+
+    private bool mostrarModalDeshabilitar = false;
+
+    private IEnumerable<ApplicationUser> registradoresFiltrados => registradores
+        .Where(registrador =>
+            (string.IsNullOrWhiteSpace(filtroNombre) ||
+                $"{registrador.Nombres} {registrador.Apellidos}".Contains(filtroNombre, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroCorreo) ||
+                registrador.Email!.Contains(filtroCorreo, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroUsuario) ||
+                registrador.UserName!.Contains(filtroUsuario, StringComparison.OrdinalIgnoreCase))
+        )
+        .OrderBy(r => r.Nombres);
+
+    private IEnumerable<ApplicationUser> registradoresPaginados => registradoresFiltrados
+        .Skip((paginaActual - 1) * tamanoPagina)
+        .Take(tamanoPagina);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRegistradores();
+    }
+
+    private async Task CargarRegistradores()
+    {
+        var usuarios = await UserManager.Users.ToListAsync();
+        var lista = new List<ApplicationUser>();
+
+        foreach (var usuario in usuarios)
+        {
+            if (await UserManager.IsInRoleAsync(usuario, "Registrador"))
+            {
+                lista.Add(usuario);
+            }
+        }
+
+        registradores = lista;
+    }
+
+    private async Task Deshabilitar()
+    {
+        errorMensaje = null;
+
+        if (registradorSeleccionado == null)
+            return;
+
+        try
+        {
+            await UserManager.SetLockoutEnabledAsync(registradorSeleccionado, true);
+            await UserManager.SetLockoutEndDateAsync(registradorSeleccionado, DateTimeOffset.MaxValue);
+
+            await CargarRegistradores();      
+            CerrarModalDeshabilitar();
+        }
+        catch
+        {
+            errorMensaje = "No se pudo deshabilitar el registrador.";
+        }
+    }
+
+    private void CerrarModalDeshabilitar()
+    {
+        mostrarModalDeshabilitar = false;
+        registradorSeleccionado = null;
+    }
+
+    private void SeleccionarRegistrador(ApplicationUser registrador)
+    {
+        registradorSeleccionado = registrador;
+        mostrarModalDeshabilitar = true;
+    }
+
+    private void LimpiarFiltros()
+    {
+        filtroNombre = "";
+        filtroCorreo = "";
+        filtroUsuario = "";
+        paginaActual = 1;
+    }
+
+    private void PrimeraPagina() => paginaActual = 1;
+    private void PaginaAnterior() { if (paginaActual > 1) paginaActual--; }
+    private void PaginaSiguiente() { if (paginaActual < totalPaginas) paginaActual++; }
+    private void UltimaPagina() => paginaActual = totalPaginas;
+}

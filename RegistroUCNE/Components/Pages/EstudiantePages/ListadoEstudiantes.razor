@@ -1,0 +1,487 @@
+﻿@page "/listado-estudiantes"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+@rendermode InteractiveServer
+
+@inject EstudianteService estudianteService
+@inject SolicitudDocumentoService solicitudDocumentoService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Consulta de Estudiantes</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title"><strong>Listado de Estudiantes</strong></h5>
+        </div>
+
+        <div class="card-body">
+            <div class="d-flex justify-content-md-end mb-3">
+                <a href="/crear-estudiante" class="btn btn-primary me-2 bi bi-person-plus">
+                    Crear Estudiante
+                </a>
+
+                <button class="btn btn-success bi bi-upload" @onclick="AbrirModalImportar">
+                    Importar CSV
+                </button>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Buscar por nombre o apellido</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Juan Pérez" @bind-Value="filtroNombre" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Matrícula</strong></label>
+                    <InputText class="form-control" placeholder="Ej: 2020-1234" @bind-Value="filtroMatricula" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Carrera</strong></label>
+                    <InputText class="form-control" placeholder="Ej: Ingeniería" @bind-Value="filtroCarrera" />
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label"><strong>Egresado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="filtroEgresado">
+                        <option value="">Todos</option>
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end justify-content-md-end">
+                    <button class="btn btn-secondary w-100" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th>ID</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Matrícula</th>
+                            <th>Carrera</th>
+                            <th>Dirección</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Egresado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (!estudiantesFiltrados.Any())
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center">No se han encontrado estudiantes.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var estudiante in estudiantesPaginados)
+                            {
+                                <tr class="text-center">
+                                    <td>@estudiante.EstudianteId</td>
+                                    <td>@estudiante.Nombres</td>
+                                    <td>@estudiante.Apellidos</td>
+                                    <td>@estudiante.Matricula</td>
+                                    <td>@estudiante.Carrera</td>
+                                    <td>@estudiante.Direccion</td>
+                                    <td>@estudiante.Correo</td>
+                                    <td>@estudiante.Telefono</td>
+                                    <td>@(estudiante.EsEgresado ? "✅" : "❌")</td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="/editar-estudiante/@estudiante.EstudianteId" class="btn btn-edit btn-sm">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <AuthorizeView Roles="Administrador">
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                        @onclick="@(() => SeleccionarEstudiante(estudiante))">
+                                                    <i class="bi bi-person-lock"></i>
+                                                </button>
+                                            </AuthorizeView>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <div class="mb-3">
+                <small class="text-muted">
+                    Mostrando <strong>@estudiantesPaginados.Count()</strong> de 
+                    <strong>@estudiantesFiltrados.Count()</strong> resultados — 
+                    Total: <strong>@estudiantes.Count</strong> estudiantes
+                </small>
+            </div>
+
+            @if (totalPaginas > 1)
+            {
+                <nav>
+                    <ul class="pagination justify-content-center flex-wrap mb-0">
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="PrimeraPagina">« Primera</button>
+                        </li>
+
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="PaginaAnterior">‹ Anterior</button>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Página @paginaActual de @totalPaginas</span>
+                        </li>
+
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="PaginaSiguiente">Siguiente ›</button>
+                        </li>
+
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <button class="page-link" @onclick="UltimaPagina">Última »</button>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Importación CSV -->
+@if (mostrarModalImportar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-success">
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-upload me-2"></i> Importar Estudiantes desde CSV
+                    </h5>
+
+                    <button class="btn-close btn-close-white" disabled="@estaImportando" @onclick="CerrarModalImportar">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        El archivo CSV debe contener el siguiente encabezado (en este orden):<br />
+                        <code>Matricula,Nombres,Apellidos,Direccion,Correo,Telefono,Carrera,EsEgresado</code>
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <InputFile OnChange="ProcesarArchivoCsv" accept=".csv" />
+
+                        <button class="btn btn-outline-primary btn-sm" @onclick="DescargarPlantilla">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Descargar plantilla
+                        </button>
+                    </div>
+
+                    @if (estaImportando)
+                    {
+                        <div class="mt-3">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                    role="progressbar" style="width: @progreso%">
+                                    @progreso%
+                                </div>
+                            </div>
+
+                            <p class="mt-2 text-center">
+                                Procesando @registrosImportados de @totalRegistros registros...
+                            </p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(resultadoImportacion))
+                    {
+                        <div class="alert alert-info mt-3">@resultadoImportacion</div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalImportar">
+                        <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalDeshabilitar) 
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Deshabilitación
+                    </h5>
+
+                    <button class="btn-close btn-close-white" @onclick="CerrarModalDeshabilitar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea deshabilitar este estudiante?</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>ID:</strong> <span class="badge bg-secondary">@estudianteSeleccionado?.EstudianteId</span></li>
+                        <li class="list-group-item"><strong>Nombres:</strong> <span class="badge bg-primary">@estudianteSeleccionado?.Nombres</span></li>
+                        <li class="list-group-item"><strong>Apellidos:</strong> <span class="badge bg-primary">@estudianteSeleccionado?.Apellidos</span></li>
+                        <li class="list-group-item"><strong>Matrícula:</strong> <span class="badge bg-info">@estudianteSeleccionado?.Matricula</span></li>
+                        <li class="list-group-item"><strong>Carrera:</strong> <span class="badge bg-success">@estudianteSeleccionado?.Carrera</span></li>
+                    </ul>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalDeshabilitar">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+
+                    <button class="btn btn-danger" @onclick="Deshabilitar">
+                        <i class="bi bi-person-lock"></i> Deshabilitar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Estudiante> estudiantes = new();
+    private Estudiante? estudianteSeleccionado;
+
+    private string? errorMensaje;
+
+    private string filtroNombre = "";
+    private string filtroMatricula = "";
+    private string filtroCarrera = "";
+    private string filtroEgresado = "";
+
+    private bool estaImportando = false;
+    private bool mostrarModalImportar = false;
+    private bool mostrarModalDeshabilitar = false;
+
+    private int totalRegistros = 0;
+    private int registrosImportados = 0;
+    private int progreso => totalRegistros == 0 ? 0 : (int)((double)registrosImportados / totalRegistros * 100);
+    private string? resultadoImportacion;
+
+    private int paginaActual = 1;
+    private int tamanoPagina = 10;
+    private int totalPaginas => Math.Max(1, (int)Math.Ceiling((double)estudiantesFiltrados.Count() / tamanoPagina));
+
+    private IEnumerable<Estudiante> estudiantesFiltrados => estudiantes
+        .Where(e =>
+            (string.IsNullOrWhiteSpace(filtroNombre) ||
+                $"{e.Nombres} {e.Apellidos}".Contains(filtroNombre, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroMatricula) ||
+                e.Matricula.Contains(filtroMatricula, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroCarrera) ||
+                e.Carrera.Contains(filtroCarrera, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filtroEgresado) ||
+                (filtroEgresado == "true" && e.EsEgresado) ||
+                (filtroEgresado == "false" && !e.EsEgresado))
+        )
+        .OrderBy(e => e.Nombres);
+
+    private IEnumerable<Estudiante> estudiantesPaginados => estudiantesFiltrados
+        .Skip((paginaActual - 1) * tamanoPagina)
+        .Take(tamanoPagina);
+
+    protected override async Task OnInitializedAsync()
+    {
+        estudiantes = await estudianteService.Listar(e => e.Activo);
+    }
+
+    private async Task ProcesarArchivoCsv(InputFileChangeEventArgs e)
+    {
+        resultadoImportacion = null;
+        estaImportando = true;
+        registrosImportados = 0;
+
+        var archivo = e.File;
+        using var stream = archivo.OpenReadStream(10_000_000);
+        using var reader = new StreamReader(stream);
+
+        var lineas = new List<string>();
+        string? linea;
+        bool primera = true;
+
+        while ((linea = await reader.ReadLineAsync()) != null)
+        {
+            if (primera)
+            {
+                primera = false;
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(linea))
+                lineas.Add(linea);
+        }
+
+        totalRegistros = lineas.Count;
+
+        var errores = new List<string>();
+
+        foreach (var (l, index) in lineas.Select((v, i) => (v, i + 2)))
+        {
+            var campos = l.Split(',');
+            if (campos.Length < 8)
+            {
+                errores.Add($"❌ Línea {index}: número de columnas inválido.");
+                continue;
+            }
+
+            var estudiante = new Estudiante
+            {
+                Matricula = campos[0].Trim(),
+                Nombres = campos[1].Trim(),
+                Apellidos = campos[2].Trim(),
+                Direccion = campos[3].Trim(),
+                Correo = campos[4].Trim(),
+                Telefono = campos[5].Trim(),
+                Carrera = campos[6].Trim(),
+                EsEgresado = bool.TryParse(campos[7].Trim(), out var egresado) && egresado
+            };
+
+            var context = new ValidationContext(estudiante);
+            var results = new List<ValidationResult>();
+
+            if (!Validator.TryValidateObject(estudiante, context, results, true))
+            {
+                var mensajes = string.Join("\n", results.Select(r => r.ErrorMessage));
+                errores.Add($"❌ Línea {index}: {mensajes}");
+                continue;
+            }
+
+            try
+            {
+                await estudianteService.Guardar(estudiante);
+                registrosImportados++;
+            }
+            catch (Exception ex)
+            {
+                errores.Add($"⚠️ Línea {index}: Error al guardar ({ex.Message})");
+            }
+
+            if (registrosImportados % 10 == 0)
+            {
+                StateHasChanged();
+                await Task.Delay(50);
+            }
+        }
+
+        estaImportando = false;
+
+        if (errores.Count == 0)
+        {
+            resultadoImportacion = $"✅ Se importaron correctamente {registrosImportados} estudiantes.";
+        }
+       else
+        {
+            resultadoImportacion =
+                $"⚠️ Se importaron {registrosImportados} estudiantes, pero hubo {errores.Count} errores:\n\n" +
+                string.Join("\n", errores.Take(10)) +
+                (errores.Count > 10 ? $"\n... y {errores.Count - 10} más." : "");
+        }
+
+        estudiantes = await estudianteService.Listar(e => e.Activo);
+        paginaActual = 1;
+    }
+
+    private async Task DescargarPlantilla()
+    {
+        var csv = "\uFEFF" +
+                "Matricula,Nombres,Apellidos,Direccion,Correo,Telefono,Carrera,EsEgresado\n" +
+                "2025-0001,Juan,Pérez Gómez,Calle Duarte #12,jperez@ucne.edu.do,809-555-1234,Ingeniería en Software,false\n" +
+                "2025-0002,Ana,Gómez Castillo,Calle Sánchez #45,agomez@ucne.edu.do,829-444-5678,Contabilidad,true\n";
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var base64 = Convert.ToBase64String(bytes);
+
+        await JS.InvokeVoidAsync(
+            "BlazorDownloadFile",
+            "plantilla_estudiantes.csv",
+            "text/csv;charset=utf-8",
+            base64
+        );
+    }
+
+    private async Task Deshabilitar()
+    {
+        errorMensaje = null;
+
+        if (estudianteSeleccionado != null && await estudianteService.Deshabilitar(estudianteSeleccionado.EstudianteId))
+        {
+            foreach (var solicitudDocumento in estudianteSeleccionado.SolicitudDocumentos)
+            {
+                await solicitudDocumentoService.Deshabilitar(solicitudDocumento.SolicitudDocumentoId);
+            }
+
+            estudiantes = await estudianteService.Listar(e => e.Activo);
+            CerrarModalDeshabilitar();
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el estudiante. Intente nuevamente.";
+        }
+    }
+
+    private void AbrirModalImportar() 
+    {
+        resultadoImportacion = null;
+        mostrarModalImportar = true;
+    }
+
+    private void CerrarModalImportar()
+    {
+        mostrarModalImportar = false;
+    }
+
+    private void CerrarModalDeshabilitar()
+    {
+        mostrarModalDeshabilitar = false;
+        estudianteSeleccionado = null;
+    }
+
+    private void SeleccionarEstudiante(Estudiante estudiante)
+    {
+        estudianteSeleccionado = estudiante;
+        mostrarModalDeshabilitar = true;
+    }
+
+    private void LimpiarFiltros()
+    {
+        filtroNombre = "";
+        filtroMatricula = "";
+        filtroCarrera = "";
+        filtroEgresado = "";
+        paginaActual = 1;
+    }
+
+    private void PrimeraPagina() => paginaActual = 1;
+    private void PaginaAnterior() { if (paginaActual > 1) paginaActual--; }
+    private void PaginaSiguiente() { if (paginaActual < totalPaginas) paginaActual++; }
+    private void UltimaPagina() => paginaActual = totalPaginas;
+}

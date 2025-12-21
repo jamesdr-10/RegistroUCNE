@@ -1,0 +1,78 @@
+@page "/ayuda-llenado"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+
+<PageTitle>Guía de Llenado de Formularios</PageTitle>
+
+<div class="container" style="max-width: 1000px;">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="bi bi-info-circle-fill me-2"></i> Guía para Llenar los Formularios
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <p class="text-muted text-center">
+                Aquí encontrarás las reglas y recomendaciones para llenar correctamente los formularios del sistema UCNE.
+            </p>
+
+            <hr />
+
+            <h4 class="mt-4">
+                <i class="bi bi-person-fill me-2 text-primary"></i> Estudiantes
+            </h4>
+
+            <ul>
+                <li><strong>Nombres y Apellidos:</strong> solo letras y espacios. Máximo 50 caracteres.</li>
+                <li><strong>Matrícula:</strong> formato <code>0000-0000</code> (ejemplo: <em>2025-0001</em>).</li>
+                <li><strong>Carrera:</strong> solo letras y espacios, máximo 100 caracteres.</li>
+                <li><strong>Dirección:</strong> puede incluir letras, números y símbolos como “#”, “-”, o “.”.</li>
+                <li><strong>Correo:</strong> formato válido, ejemplo: <em>nombre@ucne.edu.do</em>.</li>
+                <li><strong>Teléfono:</strong> formato <code>000-000-0000</code>.</li>
+                <li><strong>Es Egresado:</strong> marque la casilla si el estudiante ya completó su carrera.</li>
+            </ul>
+
+            <h4 class="mt-4">
+                <i class="bi bi-person-badge-fill me-2 text-primary"></i> Usuarios del Sistema
+            </h4>
+
+            <ul>
+                <li><strong>Nombres y Apellidos:</strong> solo letras y espacios. Máximo 50 caracteres.</li>
+                <li><strong>Dirección:</strong> puede incluir letras, números y símbolos como “#”, “-”, o “.”.</li>
+                <li><strong>Correo:</strong> formato válido, ejemplo: <em>registrador@ucne.edu.do</em>.</li>
+                <li><strong>Teléfono:</strong> formato <code>000-000-0000</code>.</li>
+                <li><strong>Nombre de Usuario:</strong> solo letras, números, guiones (-) y guiones bajos (_). Entre 4 y 30 caracteres.</li>
+                <li><strong>Contraseña:</strong> al menos 6 caracteres, con una letra mayúscula, una minúscula, un número y un carácter no alfanumérico.</li>
+            </ul>
+
+            <h4 class="mt-4">
+                <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> Documentos Académicos
+            </h4>
+
+            <ul>
+                <li><strong>Tipo de Documento:</strong> seleccione uno del listado.</li>
+                <li><strong>Estado:</strong> Iniciado / Proceso / Finalizado.</li>
+                <li><strong>Fechas:</strong> orden lógico.</li>
+            </ul>
+
+            <h4 class="mt-4 text-info">
+                <i class="bi bi-filetype-csv me-2"></i> Importación CSV de Estudiantes
+            </h4>
+
+            <p>El archivo CSV debe tener los siguientes encabezados (en este orden):</p>
+
+            <code>Matricula,Nombres,Apellidos,Direccion,Correo,Telefono,Carrera,EsEgresado</code>
+
+            <p class="mt-2">Ejemplo de líneas válidas:</p>
+
+            <pre class="bg-light p-2 border rounded">
+2025-0001,Juan,Pérez Gómez,Calle Duarte #12,jperez@ucne.edu.do,809-555-1234,Ingeniería en Software,false
+2025-0002,Ana,Gómez Castillo,Calle Sánchez #45,agomez@ucne.edu.do,829-444-5678,Contabilidad,true</pre>
+
+            <div class="alert alert-warning mt-4">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                <strong>Consejo:</strong> Si aparece un error al guardar o importar, revise que los datos cumplan con estas reglas.
+            </div>
+        </div>
+    </div>
+</div>

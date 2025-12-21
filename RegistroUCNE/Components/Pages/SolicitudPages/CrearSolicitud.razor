@@ -1,0 +1,270 @@
+﻿@page "/crear-solicitud/{EstudianteId:int?}"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject EstudianteService estudianteService
+@inject TipoDocumentoService tipoDocumentoService
+@inject SolicitudDocumentoService solicitudService
+@inject ConfiguracionSistemaService configuracionService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear Solicitud de Documento</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title"><strong>Crear Solicitud de Documento</strong></h5>
+        </div>
+
+        <div class="card-body">
+
+            @if (mostrarAlertaSeleccion)
+            {       
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="animation: fadeIn 0.5s;">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Estudiante seleccionado automáticamente: 
+                    <strong>@nombreEstudianteSeleccionado</strong>.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Estudiante</strong></label>
+                <input type="text" class="form-control mb-2" placeholder="Buscar por matrícula..."
+                       @bind="filtroMatricula"
+                       @bind:event="oninput" />
+
+                <select class="form-select" @bind="solicitudDocumento.EstudianteId" size="5">
+                    <option value="0" disabled>Seleccione un estudiante</option>
+                    @foreach (var est in estudiantesFiltrados.Take(10))
+                    {
+                        <option value="@est.EstudianteId">@est.Matricula - @est.Nombres @est.Apellidos</option>
+                    }
+                </select>
+
+                <small class="text-muted">
+                    Mostrando los 10 estudiantes más recientes.
+                    <a href="/ucne/buscar-estudiantes">Ver todos</a>
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Tipo de Documento</strong></label>
+                @if (documentosFavoritos.Any())
+                {
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Accesos rápidos</strong></label>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            @foreach (var doc in documentosFavoritos)
+                            {
+                                <button class="btn btn-outline-primary"
+                                        @onclick="() => SeleccionarDocumentoRapido(doc.TipoDocumentoId)">
+                                    @doc.Nombre
+                                </button>
+                            }
+                        </div>
+
+                        <small class="text-muted">
+                            Estos documentos fueron configurados como los más solicitados.
+                        </small>
+                    </div>
+                }
+
+                <InputSelect class="form-select" @bind-Value="solicitudDocumento.TipoDocumentoId">
+                    <option value="0" disabled>Seleccione un tipo de documento</option>
+                    @foreach (var tipo in tiposDocumento)
+                    {
+                        <option value="@tipo.TipoDocumentoId">@tipo.Nombre</option>
+                    }
+                </InputSelect>
+            </div>
+
+            @if (solicitudDocumento.TipoDocumentoId == 15)
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Especifique el tipo de documento</strong></label>
+                    <InputText class="form-control"
+                            @bind-Value="solicitudDocumento.DescripcionAdicional"
+                            placeholder="Ejemplo: WES - Canadá, ECFMG - Estados Unidos, etc." />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Estado del Documento</strong></label>
+                <InputSelect class="form-select" @bind-Value="solicitudDocumento.EstadoProceso">
+                    <option value="Iniciado">Iniciado</option>
+                    <option value="En Proceso" disabled>En Proceso</option>
+                    <option value="Finalizado" disabled>Finalizado</option>
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Fecha de Solicitud</strong></label>
+                <InputDate class="form-control" @bind-Value="solicitudDocumento.FechaSolicitudLocal" />
+            </div>
+
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" @bind-Value="tieneRecibo" />
+                <label class="form-check-label"><strong>Recibo de pago</strong></label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMensaje))
+            {
+                <div class="error-message-container">
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i> @errorMensaje
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <div class="d-flex justify-content-center">
+                 <a href="/listado-solicitudes" class="btn btn-secondary me-2">
+                    <span class="bi bi-arrow-left me-2"></span> Volver
+                </a>
+
+                <button class="btn btn-success" @onclick="Guardar"
+                        disabled="@(estaCargando || solicitudDocumento.EstudianteId <= 0 || solicitudDocumento.TipoDocumentoId <= 0 || (!tieneRecibo && configSistema.ReciboPagoObligatorio))">
+
+                    @if (estaCargando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span class="bi bi-save me-2"></span>
+                        <span>Guardar</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? EstudianteId { get; set; }
+
+    private int registradorActualId;
+    
+    private ConfiguracionSistema configSistema = new();
+    private List<TipoDocumento> documentosFavoritos = new();
+
+    private SolicitudDocumento solicitudDocumento = new();
+    private List<TipoDocumento> tiposDocumento = new();
+    private List<Estudiante> estudiantes = new();
+
+    private string? errorMensaje;
+    private bool estaCargando = false;
+
+    private string filtroMatricula = string.Empty;
+    private string nombreEstudianteSeleccionado = string.Empty;
+
+    private bool mostrarAlertaSeleccion = false;
+    private bool tieneRecibo = false;
+
+    private IEnumerable<Estudiante> estudiantesFiltrados =>
+        string.IsNullOrWhiteSpace(filtroMatricula)
+            ? estudiantes : estudiantes
+            .Where(e => e.Matricula.Contains(filtroMatricula, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user != null)
+        {
+            registradorActualId = user.Id;
+        }
+
+        estudiantes = (await estudianteService.Listar(e => e.Activo))
+            .OrderByDescending(e => e.EstudianteId)
+            .Take(50)
+            .ToList();
+
+        tiposDocumento = await tipoDocumentoService.Listar();
+        configSistema = await configuracionService.Obtener();
+
+        documentosFavoritos = tiposDocumento
+            .Where(t => configSistema.DocumentosFavoritos.Contains(t.TipoDocumentoId))
+            .ToList();
+
+        if (EstudianteId.HasValue)
+        {
+            var estudianteSeleccionado = estudiantes.FirstOrDefault(e => e.EstudianteId == EstudianteId.Value)
+                ?? await estudianteService.Buscar(EstudianteId.Value);
+
+            if (estudianteSeleccionado != null)
+            {
+                solicitudDocumento.EstudianteId = estudianteSeleccionado.EstudianteId;
+                nombreEstudianteSeleccionado = $"{estudianteSeleccionado.Nombres} {estudianteSeleccionado.Apellidos}";
+                mostrarAlertaSeleccion = true;
+            }
+        }
+    }
+
+    private void SeleccionarDocumentoRapido(int tipoDocumentoId)
+    {
+        solicitudDocumento.TipoDocumentoId = tipoDocumentoId;
+
+        if (tipoDocumentoId != 15)
+            solicitudDocumento.DescripcionAdicional = string.Empty;
+    }   
+
+    private async Task Guardar()
+    {
+        errorMensaje = null;
+        estaCargando = true;
+
+        if (solicitudDocumento.EstudianteId <= 0)
+        {
+            errorMensaje = "Debe seleccionar un estudiante.";
+            estaCargando = false;
+            return;
+        }
+
+        if (solicitudDocumento.TipoDocumentoId <= 0)
+        {
+            errorMensaje = "Debe seleccionar un tipo de documento.";
+            estaCargando = false;
+            return;
+        }
+
+        if (solicitudDocumento.TipoDocumentoId == 15 && string.IsNullOrWhiteSpace(solicitudDocumento.DescripcionAdicional))
+        {
+            errorMensaje = "Debe especificar el nombre del documento en el campo adicional.";
+            estaCargando = false;
+            return;
+        }
+
+        if (configSistema.ReciboPagoObligatorio && !tieneRecibo) 
+        {
+            errorMensaje = "Debe marcar el recibo de pago (obligatorio).";
+            estaCargando = false;
+            return;
+        }
+
+        solicitudDocumento.TrabajosRegistrador.Add(new SolicitudDocumentoRegistrador
+        {
+            RegistradorId = registradorActualId,
+            FechaTrabajoLocal = DateTime.Now,
+            DescripcionTrabajo = "Solicitud creada"
+        });
+
+        if (await solicitudService.Guardar(solicitudDocumento))
+        {
+            Navigation.NavigateTo("/listado-solicitudes");
+        }
+        else
+        {
+            errorMensaje = "Error al guardar la solicitud. Intente nuevamente.";
+        }
+
+        estaCargando = false;
+    }
+}

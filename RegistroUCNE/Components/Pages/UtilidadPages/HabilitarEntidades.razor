@@ -1,0 +1,348 @@
+@page "/habilitar"
+@attribute [Authorize(Roles = "Administrador")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole<int>> RoleManager
+@inject EstudianteService estudianteService
+@inject SolicitudDocumentoService solicitudService
+@inject NavigationManager Navigation
+
+<PageTitle>Reactivar Entidades</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="bi bi-arrow-repeat me-2"></i> Rehabilitación de Entidades
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="alert alert-info text-center mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                Aquí puedes volver a habilitar estudiantes, documentos y registradores previamente deshabilitados.
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header text-center bg-primary text-white fw-semibold">
+                            <i class="bi bi-person-fill me-1"></i> Estudiantes Deshabilitados
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <InputText class="form-control" placeholder="Buscar por nombre o matrícula..." @bind-Value="filtroEstudiante" />
+                            </div>
+
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle">
+                                    <thead class="table-light text-center">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!estudiantesPaginados.Any())
+                                        {
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted py-4">No hay registros.</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var est in estudiantesPaginados)
+                                            {
+                                                <tr class="text-center">
+                                                    <td>@est.EstudianteId</td>
+                                                    <td>@est.Nombres @est.Apellidos</td>
+                                                    <td>
+                                                        <button class="btn btn-success btn-sm"
+                                                                @onclick="() => HabilitarEstudiante(est.EstudianteId)">
+                                                            <i class="bi bi-check-circle"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (totalPaginasEst > 1)
+                            {
+                                <nav class="mt-2 text-center">
+                                    <ul class="pagination pagination-sm justify-content-center flex-wrap mb-0">
+                                        <li class="page-item @(paginaEst == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="PrimeraPaginaEst">«</button>
+                                        </li>
+                                        <li class="page-item @(paginaEst == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="AnteriorEst">‹</button>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Página @paginaEst de @totalPaginasEst</span>
+                                        </li>
+                                        <li class="page-item @(paginaEst == totalPaginasEst ? "disabled" : "")">
+                                            <button class="page-link" @onclick="SiguienteEst">›</button>
+                                        </li>
+                                        <li class="page-item @(paginaEst == totalPaginasEst ? "disabled" : "")">
+                                            <button class="page-link" @onclick="UltimaPaginaEst">»</button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header text-center bg-warning fw-semibold">
+                            <i class="bi bi-file-earmark-fill me-1"></i> Solicitudes Deshabilitadas
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <InputText class="form-control" placeholder="Buscar por tipo o estudiante..." @bind-Value="filtroDocumento" />
+                            </div>
+
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle">
+                                    <thead class="table-light text-center">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Tipo</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!solicitudesPaginadas.Any())
+                                        {
+                                            <tr><td colspan="3" class="text-center text-muted py-4">No hay registros.</td></tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var solicitud in solicitudesPaginadas)
+                                            {
+                                                <tr class="text-center">
+                                                    <td>@solicitud.SolicitudDocumentoId</td>
+                                                    <td>@solicitud.TipoDocumento?.Nombre</td>
+                                                    <td>
+                                                        <button class="btn btn-success btn-sm"
+                                                                @onclick="() => HabilitarSolicitud(solicitud.SolicitudDocumentoId)">
+                                                            <i class="bi bi-check-circle"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (totalPaginasDoc > 1)
+                            {
+                                <nav class="mt-2 text-center">
+                                    <ul class="pagination pagination-sm justify-content-center flex-wrap mb-0">
+                                        <li class="page-item @(paginaDoc == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="PrimeraPaginaSol">«</button>
+                                        </li>
+                                        <li class="page-item @(paginaDoc == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="AnteriorSol">‹</button>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Página @paginaDoc de @totalPaginasDoc</span>
+                                        </li>
+                                        <li class="page-item @(paginaDoc == totalPaginasDoc ? "disabled" : "")">
+                                            <button class="page-link" @onclick="SiguienteSol">›</button>
+                                        </li>
+                                        <li class="page-item @(paginaDoc == totalPaginasDoc ? "disabled" : "")">
+                                            <button class="page-link" @onclick="UltimaPaginaSol">»</button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header text-center bg-danger text-white fw-semibold">
+                            <i class="bi bi-person-badge-fill me-1"></i> Registradores Deshabilitados
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <InputText class="form-control" placeholder="Buscar por nombre o correo..." @bind-Value="filtroRegistrador" />
+                            </div>
+
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle">
+                                    <thead class="table-light text-center">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!registradoresPaginados.Any())
+                                        {
+                                            <tr><td colspan="3" class="text-center text-muted py-4">No hay registros.</td></tr>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var reg in registradoresPaginados)
+                                            {
+                                                <tr class="text-center">
+                                                    <td>@reg.Id</td>
+                                                    <td>@reg.Nombres @reg.Apellidos</td>
+                                                    <td>
+                                                        <button class="btn btn-success btn-sm"
+                                                                @onclick="() => HabilitarRegistrador(reg.Id)">
+                                                            <i class="bi bi-check-circle"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (totalPaginasReg > 1)
+                            {
+                                <nav class="mt-2 text-center">
+                                    <ul class="pagination pagination-sm justify-content-center flex-wrap mb-0">
+                                        <li class="page-item @(paginaReg == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="PrimeraPaginaReg">«</button>
+                                        </li>
+                                        <li class="page-item @(paginaReg == 1 ? "disabled" : "")">
+                                            <button class="page-link" @onclick="AnteriorReg">‹</button>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Página @paginaReg de @totalPaginasReg</span>
+                                        </li>
+                                        <li class="page-item @(paginaReg == totalPaginasReg ? "disabled" : "")">
+                                            <button class="page-link" @onclick="SiguienteReg">›</button>
+                                        </li>
+                                        <li class="page-item @(paginaReg == totalPaginasReg ? "disabled" : "")">
+                                            <button class="page-link" @onclick="UltimaPaginaReg">»</button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-success mt-4 text-center">
+                    <i class="bi bi-check-circle-fill me-2"></i> @mensaje
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Estudiante> estudiantesInactivos = new();
+    private List<SolicitudDocumento> solicitudesInactivas = new();
+    private List<ApplicationUser> registradoresInactivos = new();
+    private string? mensaje;
+
+    private string filtroEstudiante = "";
+    private string filtroDocumento = "";
+    private string filtroRegistrador = "";
+
+    private int paginaEst = 1, paginaDoc = 1, paginaReg = 1;
+    private int tamanoPagina = 8;
+
+    protected override async Task OnInitializedAsync() => await Recargar();
+
+    private async Task HabilitarEstudiante(int id)
+    {
+        await estudianteService.Habilitar(id);
+        await Recargar();
+        mensaje = "✅ Estudiante habilitado correctamente.";
+    }
+
+    private async Task HabilitarSolicitud(int id)
+    {
+        await solicitudService.Habilitar(id);
+        await Recargar();
+        mensaje = "✅ Solicitud habilitada correctamente.";
+    }
+
+    private async Task HabilitarRegistrador(int id)
+    {
+        var user = await UserManager.FindByIdAsync(id.ToString());
+        if (user == null) return;
+
+        await UserManager.SetLockoutEndDateAsync(user, null);
+
+        await Recargar();
+        mensaje = "✅ Registrador habilitado correctamente.";
+    }
+
+    private async Task Recargar()
+    {
+        estudiantesInactivos = await estudianteService.Listar(e => !e.Activo);
+        solicitudesInactivas = await solicitudService.Listar(d => !d.Activo);
+
+        var now = DateTimeOffset.UtcNow;
+
+        var registradores = await UserManager.GetUsersInRoleAsync("Registrador");
+
+        registradoresInactivos = registradores
+            .Where(u => u.LockoutEnd.HasValue && u.LockoutEnd > now)
+            .ToList();
+    }
+
+
+    private IEnumerable<Estudiante> estudiantesFiltrados => estudiantesInactivos
+        .Where(e => string.IsNullOrWhiteSpace(filtroEstudiante)
+                 || e.Nombres.Contains(filtroEstudiante, StringComparison.OrdinalIgnoreCase)
+                 || e.Apellidos.Contains(filtroEstudiante, StringComparison.OrdinalIgnoreCase)
+                 || e.Matricula.Contains(filtroEstudiante, StringComparison.OrdinalIgnoreCase));
+
+    private IEnumerable<SolicitudDocumento> solicitudesFiltradas => solicitudesInactivas
+        .Where(d => string.IsNullOrWhiteSpace(filtroDocumento)
+                 || d.TipoDocumento!.Nombre.Contains(filtroDocumento, StringComparison.OrdinalIgnoreCase)
+                 || $"{d.Estudiante!.Nombres} {d.Estudiante!.Apellidos}".Contains(filtroDocumento, StringComparison.OrdinalIgnoreCase));
+
+    private IEnumerable<ApplicationUser> registradoresFiltrados => registradoresInactivos
+        .Where(r => string.IsNullOrWhiteSpace(filtroRegistrador)
+                 || r.Nombres.Contains(filtroRegistrador, StringComparison.OrdinalIgnoreCase)
+                 || r.Apellidos.Contains(filtroRegistrador, StringComparison.OrdinalIgnoreCase)
+                 || r.Email!.Contains(filtroRegistrador, StringComparison.OrdinalIgnoreCase));
+
+    private int totalPaginasEst => (int)Math.Ceiling((double)estudiantesFiltrados.Count() / tamanoPagina);
+    private int totalPaginasDoc => (int)Math.Ceiling((double)solicitudesFiltradas.Count() / tamanoPagina);
+    private int totalPaginasReg => (int)Math.Ceiling((double)registradoresFiltrados.Count() / tamanoPagina);
+
+    private IEnumerable<Estudiante> estudiantesPaginados => estudiantesFiltrados.Skip((paginaEst - 1) * tamanoPagina).Take(tamanoPagina);
+    private IEnumerable<SolicitudDocumento> solicitudesPaginadas => solicitudesFiltradas.Skip((paginaDoc - 1) * tamanoPagina).Take(tamanoPagina);
+    private IEnumerable<ApplicationUser> registradoresPaginados => registradoresFiltrados.Skip((paginaReg - 1) * tamanoPagina).Take(tamanoPagina);
+
+    private void PrimeraPaginaEst() => paginaEst = 1;
+    private void AnteriorEst() { if (paginaEst > 1) paginaEst--; }
+    private void SiguienteEst() { if (paginaEst < totalPaginasEst) paginaEst++; }
+    private void UltimaPaginaEst() => paginaEst = totalPaginasEst;
+
+    private void PrimeraPaginaSol() => paginaDoc = 1;
+    private void AnteriorSol() { if (paginaDoc > 1) paginaDoc--; }
+    private void SiguienteSol() { if (paginaDoc < totalPaginasDoc) paginaDoc++; }
+    private void UltimaPaginaSol() => paginaDoc = totalPaginasDoc;
+
+    private void PrimeraPaginaReg() => paginaReg = 1;
+    private void AnteriorReg() { if (paginaReg > 1) paginaReg--; }
+    private void SiguienteReg() { if (paginaReg < totalPaginasReg) paginaReg++; }
+    private void UltimaPaginaReg() => paginaReg = totalPaginasReg;
+}

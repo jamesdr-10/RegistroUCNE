@@ -1,0 +1,96 @@
+@page "/creditos"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+
+<PageTitle>Créditos del Proyecto</PageTitle>
+
+<div class="container" style="max-width: 1000px;">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="bi bi-stars me-2 text-warning"></i> Créditos del Proyecto
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <img src="/images/logoUCNE.png" class="mb-3" alt="Logo UCNE" style="width:180px;" />
+                <h5 class="text-secondary">Universidad Católica Nordestana (UCNE)</h5>
+                <p class="mb-0 text-muted">Facultad de Ingeniería</p>
+                <p class="text-muted">Escuela de Ingeniería en Sístemas y Cómputos</p>
+            </div>
+
+            <hr />
+
+            <h5 class="text-center mb-3">
+                <i class="bi bi-code-slash me-2"></i>Desarrolladores
+            </h5>
+
+            <div class="row justify-content-center">
+
+                <div class="col-md-4 text-center mb-3">
+                    <img src="/images/creditos/james_depena.jpeg" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">James De Peña Rodríguez</h6>
+                </div>
+
+                <div class="col-md-4 text-center mb-3">
+                    <img src="/images/creditos/jorge_moya.png" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">Jorge Moya De Peña</h6>
+                </div>
+
+                <div class="col-md-4 text-center mb-3">
+                    <img src="/images/creditos/jp_guillen.jpeg" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">Juan Pablo Guillén Zorrilla</h6>
+                </div>
+
+                <div class="col-md-4 text-center mb-4">
+                    <img src="/images/creditos/james_urena.jpeg" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">James Ureña Paulino</h6>
+                </div>
+
+                <div class="col-md-4 text-center mb-4">
+                    <img src="/images/creditos/luis_gabriel.jpeg" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">Luis Ángel Gabriel Morillo</h6>
+                </div>
+
+                <div class="col-md-4 text-center mb-4">
+                    <img src="/images/creditos/adonis_mercado.jpeg" class="credit-photo mb-2" />
+                    <h6 class="mt-2 mb-0">Adonis Mercado</h6>
+                </div>
+
+            </div>
+
+            <hr />
+
+            <h5 class="text-center mb-3">
+                <i class="bi bi-mortarboard-fill me-2"></i>Profesor a Cargo
+            </h5>
+
+            <div class="text-center">
+                <i class="bi bi-person-badge fs-1 text-success"></i>
+                <h6 class="mt-2 mb-0">Ing. Freddy C. Belliard M.</h6>
+                <small class="text-muted">Docente - Asignatura: Proyecto Aplicado</small>
+            </div>
+
+            <hr />
+
+            <h5 class="text-center mb-3">
+                <i class="bi bi-gear-wide-connected me-2"></i>Tecnologías Utilizadas
+            </h5>
+
+            <ul class="list-group list-group-flush text-center mb-3">
+                <li class="list-group-item">Blazor Server (.NET 10)</li>
+                <li class="list-group-item">Entity Framework Core</li>
+                <li class="list-group-item">ASP.NET Core Identity</li>
+                <li class="list-group-item">PostgreSQL</li>
+                <li class="list-group-item">Cloudfare R2 Storage</li>
+                <li class="list-group-item">Bootstrap 5 & Bootstrap Icons</li>
+            </ul>
+
+            <div class="text-center mt-4">
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar-event me-1"></i> Proyecto desarrollado en el semestre 3-2025
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

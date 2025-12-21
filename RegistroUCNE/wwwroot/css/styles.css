@@ -1,0 +1,290 @@
+/* =========================================================
+   BASE / RESET
+========================================================= */
+
+html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h4,
+h5 {
+    font-weight: 600;
+}
+
+hr {
+    border-top: 2px solid #e2e8f0;
+}
+
+ul {
+    padding-left: 1.2rem;
+}
+
+ul li {
+    margin-bottom: .4rem;
+    color: #4a5568;
+}
+
+code {
+    background: #f1f5f9;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #2b6cb0;
+}
+
+pre {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: .5rem;
+    font-size: .95rem;
+    overflow-x: auto;
+}
+
+/* =========================================================
+   LAYOUT BASE
+========================================================= */
+
+.container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.card {
+    border-radius: 1.5rem;
+    background-color: white;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.card-header {
+    background-color: #003366;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.card-footer {
+    padding: 1.5rem;
+}
+
+/* =========================================================
+   FORMULARIOS
+========================================================= */
+
+.form-select,
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: #f1f5f9;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.form-check-input {
+    border-radius: .4rem;
+    border: 2px solid;
+    cursor: pointer;
+}
+
+/* =========================================================
+   TABLAS
+========================================================= */
+
+.table-responsive {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.table tbody tr {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f7fafc;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all .3s ease;
+}
+
+.btn-primary {
+    background-color: #20359E;
+    border-color: #20359E;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: #174493;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #239d3c;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-info {
+    background-color: #4299e1;
+    border-color: #4299e1;
+    color: #fff;
+}
+
+.btn-info:hover {
+    background-color: #3182ce;
+}
+
+.btn-edit {
+    background-color: #1565C0;
+    color: #fff;
+}
+
+.btn-edit:hover {
+    background-color: #0d47a1;
+}
+
+/* =========================================================
+   BADGES / ESTADOS
+========================================================= */
+
+.badge.bg-success {
+    background-color: #28a745;
+}
+
+.badge.bg-warning {
+    background-color: #ed8936;
+    color: #000;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545;
+}
+
+/* =========================================================
+   ERRORES / SPINNER
+========================================================= */
+
+.error-message-container {
+    margin-top: 1rem;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    border: 1px solid #f5c2c7;
+}
+
+.spinner-border {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+.credit-photo {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #003366;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}

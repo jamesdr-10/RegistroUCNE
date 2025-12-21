@@ -1,0 +1,132 @@
+﻿@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-3">
+                <img src="/images/logoUCNE.png" style="width: 100%" />
+            </div>
+
+            <div class="col-9 d-flex align-items-center">
+                <a class="navbar-brand">UCNE</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column justify-content-between h-100">
+
+        <div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/inicio">
+                    <span class="bi bi-house-door-fill-nav-menu"></span> Inicio
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/listado-solicitudes">
+                    <span class="bi bi-file-text-fill fs-5 mb-4"></span> Solicitudes
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/listado-estudiantes">
+                    <span class="bi bi-person-plus-fill fs-5 mb-4"></span> Estudiantes
+                </NavLink>
+            </div>
+
+            <AuthorizeView Roles="Administrador">
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/listado-registradores">
+                        <span class="bi bi-person-badge-fill fs-5 mb-4"></span> Registradores
+                    </NavLink>
+                </div>
+            </AuthorizeView>
+        </div>
+
+        <div class="nav-item mb-3">
+
+            <AuthorizeView Roles="Administrador">
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link text-warning" href="/habilitar">
+                        <span class="bi bi-arrow-repeat fs-5 mb-4"></span> Reactivar Entidades
+                    </NavLink>
+                </div>
+            </AuthorizeView>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link text-info" href="/ayuda-llenado">
+                    <span class="bi bi-info-circle-fill fs-5 mb-4"></span> Ayuda / Guía
+                </NavLink>
+            </div>
+
+            <AuthorizeView Roles="Administrador">
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link text-secondary" href="/configuracion-sistema">
+                        <span class="bi bi-gear fs-5 mb-4"></span> Configuración
+                    </NavLink>
+                </div>
+            </AuthorizeView>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link text-success" href="/creditos">
+                    <span class="bi bi-stars fs-5 mb-4"></span> Créditos
+                </NavLink>
+            </div>
+
+            <AuthorizeView>
+                <Authorized Context="auth">
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Perfil
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="nav-link text-danger">
+                                <span class="bi bi-box-arrow-right fs-5 mb-4" aria-hidden="true"></span> Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+
+                <NotAuthorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="Account/Login">
+                            <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Iniciar Sesión
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

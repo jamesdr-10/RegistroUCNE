@@ -1,0 +1,198 @@
+@page "/ver-solicitud/{DocumentoId:int}"
+@attribute [Authorize(Roles = "Administrador,Registrador")]
+@rendermode InteractiveServer
+
+@inject SolicitudDocumentoService solicitudService
+@inject NavigationManager Navigation
+
+<PageTitle>Detalles del Documento</PageTitle>
+
+@if (solicitudNoEncontrada)
+{
+    <div class="container">
+        <div class="alert alert-danger text-center shadow">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Solicitud no encontrada
+            </h4>
+
+            <p>La solicitud que intenta editar no existe o fue deshabilitada.</p>
+            <hr />
+
+            <a href="/listado-solicitudes" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4 class="card-title">
+                    <i class="bi bi-eye-fill me-2"></i> Detalles del Documento Académico
+                </h4>
+            </div>
+
+            <div class="card-body">
+                @if (solicitud == null)
+                {
+                    <div class="text-center my-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-3">Cargando información del documento...</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>ID del Documento</strong></label>
+                            <input class="form-control" value="@solicitud.SolicitudDocumentoId" disabled />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Tipo de Documento</strong></label>
+                            
+                            @if (solicitud.TipoDocumentoId == 15 && !string.IsNullOrWhiteSpace(solicitud.DescripcionAdicional))
+                            {
+                                <input class="form-control"
+                                    value="@($"{solicitud.TipoDocumento?.Nombre} - {solicitud.DescripcionAdicional}")"
+                                    disabled />
+                            }
+                            else
+                            {
+                                <input class="form-control" value="@solicitud.TipoDocumento?.Nombre" disabled />
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Estudiante</strong></label>
+                            <input class="form-control"
+                                value="@($"{solicitud.Estudiante!.Nombres} {solicitud.Estudiante.Apellidos}")" disabled />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Carrera</strong></label>
+                            <input class="form-control" value="@solicitud.Estudiante.Carrera" disabled />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Estado del Proceso</strong></label>
+                            <input class="form-control" value="@solicitud.EstadoProceso" disabled />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Fecha de Solicitud</strong></label>
+                            <input class="form-control" value="@solicitud.FechaSolicitudLocal.ToString("dd/MM/yyyy")" disabled />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Fecha de Finalización</strong></label>
+                            <input class="form-control"
+                                value="@(solicitud.FechaFinalizadoLocal?.ToString("dd/MM/yyyy") ?? "Pendiente")" disabled />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Fecha de Entrega</strong></label>
+                            <input class="form-control"
+                                value="@(solicitud.FechaEntregaLocal?.ToString("dd/MM/yyyy") ?? "Pendiente")" disabled />
+                        </div>
+
+                        @if (solicitud.DocumentoFinal != null && solicitud.DocumentoFinal.Activo)
+                        {
+                            <div class="col-12 mt-3 text-center">
+                                <a class="btn btn-outline-primary"
+                                href="/ver-documento/@solicitud.SolicitudDocumentoId/@solicitud.DocumentoFinal.TokenAcceso"
+                                target="_blank">
+                                    <i class="bi bi-eye-fill me-2"></i> Ver Documento
+                                </a>
+
+                                <p class="mt-3 text-muted small">
+                                    <strong>Hash SHA256:</strong> @solicitud.DocumentoFinal.HashSha256
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-12 text-center mt-3">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    No hay documento disponible.
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h5 class="text-center text-secondary mb-3">
+                        <i class="bi bi-people-fill me-2"></i> Historial de Trabajo del Documento
+                    </h5>
+
+                    @if (solicitud.TrabajosRegistrador == null || !solicitud.TrabajosRegistrador.Any())
+                    {
+                        <p class="text-center text-muted">No se ha registrado actividad en este documento.</p>
+                    }
+                    else
+                    {
+                        <div class="border p-3 rounded">
+                            <div class="table-responsive">
+                                <table class="table align-middle text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Registrador</th>
+                                            <th>Correo</th>
+                                            <th>Fecha de Trabajo</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var (registro, index) in solicitud.TrabajosRegistrador.Select((r, i) => (r, i + 1)))
+                                        {
+                                            <tr>
+                                                <td>@index</td>
+                                                <td>@($"{registro.Registrador!.Nombres} {registro.Registrador.Apellidos}")</td>
+                                                <td>@registro.Registrador.Email</td>
+                                                <td>@registro.FechaTrabajoLocal.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td>@(string.IsNullOrWhiteSpace(registro.DescripcionTrabajo) 
+                                                    ? "Sin descripción" 
+                                                    : registro.DescripcionTrabajo)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <a href="/listado-solicitudes" class="btn btn-secondary">
+                        <span class="bi bi-arrow-left me-2"></span> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int DocumentoId { get; set; }
+
+    private SolicitudDocumento? solicitud;
+    private bool solicitudNoEncontrada = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        solicitud = await solicitudService.Buscar(DocumentoId);
+
+        if (solicitud == null || !solicitud.Activo) 
+        {
+            solicitudNoEncontrada = true;
+            return;
+        }
+    }
+}
