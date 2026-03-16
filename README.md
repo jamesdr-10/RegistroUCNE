@@ -189,10 +189,6 @@ Descripción de campos:
 * **BucketName:** Nombre del bucket
 * **PublicBaseUrl:** URL pública base para visualizar los PDFs
 
-> ⚠️ **Seguridad:**
-> Nunca subas credenciales reales al repositorio.
-> Usa `appsettings.Development.json` o variables de entorno.
-
 ---
 
 ## 👤 Credenciales por Defecto
