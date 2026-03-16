@@ -106,13 +106,6 @@ Ejemplo:
 > ⚠️ **Nota:**
 > El sistema no está diseñado para SQL Server ni SQLite.
 > **PostgreSQL es obligatorio.**
-Sí 👍, **el contenido está correcto**, pero a nivel de **estilo README profesional** se puede pulir bastante para que:
-
-* Se vea consistente con el resto del documento
-* Sea más claro para un profesor o evaluador técnico
-* Use mejor jerarquía visual (títulos, listas, bloques de código)
-
-Te dejo **la versión mejorada**, lista para **copiar y pegar**, con el mismo contenido pero mejor presentado 👇
 
 ---
 
